@@ -26,10 +26,10 @@
 
   /* overview */
   #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-  #overview-strip { background: #fff; border-bottom: 2.5px solid #111; flex: 0 0 auto; display: flex; flex-direction: column; overflow: hidden; transition: all .3s ease; max-height: 100%; }
+  #overview-strip { background: #fff; border-bottom: 2.5px solid #111; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   .wd-row { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; padding: 8px 0; border-bottom: 2px solid #111; font-size: 11px; font-weight: 800; background: #f7f6f2; flex: 0 0 auto; }
   .wd-row .we { color: #a3a09a; }
-  #calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 6px; background: #fff; flex: 1; overflow-y: auto; scrollbar-width: none; }
+  #calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 1fr; gap: 6px; padding: 6px; background: #fff; flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; }
   #calendar-grid::-webkit-scrollbar { display: none; }
   .day-card { background: #fff; border: 2px solid #111; border-radius: 12px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; min-height: 150px; }
   .day-card.sel { box-shadow: 0 0 0 2.5px #111; }
