@@ -48,7 +48,7 @@
   #day-strip { display: flex; gap: 8px; overflow-x: auto; padding-right: 12px; scrollbar-width: none; }
   #day-strip::-webkit-scrollbar { display: none; }
   .strip-day { flex: 0 0 auto; width: 62px; background: #fff; border: 2px solid #111; border-radius: 12px; padding: 8px 0; text-align: center; cursor: pointer; }
-  .strip-day .wd { font-size: 10px; font-weight: 700; color: #888; letter-spacing: .5px; }
+  .strip-day .wd { font-size: 11px; font-weight: 600; color: #888; letter-spacing: .5px; }
   .strip-day .dn { font-size: 20px; font-weight: 800; margin-top: 2px; }
   .strip-day.sel { background: #111; color: #fff; }
   .strip-day.sel .wd { color: #bbb; }
@@ -73,7 +73,7 @@
   #trip-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
   .trip-item { border: 2px solid #111; border-radius: 10px; padding: 12px; cursor: pointer; background: #fff; }
   .trip-item.sel { background: #111; color: #fff; }
-  .trip-item .tn { font-size: 14px; font-weight: 800; }
+  .trip-item .tn { font-size: 15px; font-weight: 800; }
   .trip-item .td { font-size: 12px; opacity: .7; margin-top: 2px; }
 
   /* modals */
@@ -82,7 +82,7 @@
   .card::-webkit-scrollbar { display: none; }
   .card h3 { font-size: 24px; font-weight: 800; }
   .m-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .x-btn { background: none; border: none; font-size: 24px; font-weight: 700; cursor: pointer; line-height: 1; }
+  .x-btn { background: none; border: none; font-size: 24px; font-weight: 800; cursor: pointer; line-height: 1; }
   .field { width: 100%; border: 2px solid #111; border-radius: 10px; padding: 13px 14px; font-size: 16px; font-family: inherit; background: #fff; }
   .field:focus { outline: none; }
   textarea.field { min-height: 96px; resize: none; }
@@ -90,11 +90,11 @@
   .row .ic { font-size: 22px; flex: 0 0 auto; }
   .icon-pick { width: 64px; height: 64px; flex: 0 0 auto; border: 2px solid #111; border-radius: 10px; background: #fff; font-size: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .hint { color: #8a8781; font-size: 15px; font-weight: 600; }
-  .btn { border: 2px solid #111; border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; box-shadow: 2px 2px 0 #111; padding: 10px 22px; font-size: 16px; font-weight: 700; background: #fff; cursor: pointer; transition: all .1s ease; }
+  .btn { border: 2px solid #111; border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; box-shadow: 2px 2px 0 #111; padding: 10px 22px; font-size: 16px; font-weight: 800; background: #fff; cursor: pointer; transition: all .1s ease; }
   .btn:active { transform: translate(2px,2px); box-shadow: 0 0 0 #111; }
   .btn-dark { background: #111; color: #fff; padding: 10px 30px; }
   .btn-row { display: flex; justify-content: flex-end; gap: 10px; align-items: center; margin-top: 6px; }
-  .del-link { margin-right: auto; background: none; border: none; color: #d33; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .del-link { margin-right: auto; background: none; border: none; color: #d33; font-size: 15px; font-weight: 800; cursor: pointer; }
   #emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; max-height: 230px; overflow-y: auto; scrollbar-width: none; }
   #emoji-grid::-webkit-scrollbar { display: none; }
   #emoji-grid .ec { font-size: 26px; text-align: center; padding: 8px; cursor: pointer; border-radius: 10px; }
@@ -169,7 +169,7 @@
   <div id="sidebar">
     <div class="sb-head">
       <h2>My Trips</h2>
-      <button class="x-btn" onclick="toggleSidebar()" style="font-size:18px;">✕</button>
+      <button class="x-btn" onclick="toggleSidebar()">✕</button>
     </div>
     <div id="trip-list"></div>
     <button class="btn btn-dark" style="width:100%;margin-top:12px;flex:0 0 auto;" onclick="openNewTripModal()">＋ New Trip</button>
@@ -180,14 +180,14 @@
     <div class="card" style="max-width:340px;">
       <h3 id="edit-trip-modal-title" style="font-size:19px;padding-bottom:8px;border-bottom:2px solid #111;margin-bottom:14px;">Edit Trip Details</h3>
       <label class="lbl">Trip Title</label>
-      <input id="edit-title-input" type="text" class="field" style="margin-bottom:12px;font-size:15px;padding:10px 12px;">
+      <input id="edit-title-input" type="text" class="field" style="margin-bottom:12px;padding:10px 12px;">
       <div style="display:flex;gap:8px;margin-bottom:16px;">
-        <div style="flex:1;"><label class="lbl">Start Date</label><input id="edit-start-input" type="date" class="field" style="font-size:14px;padding:10px;"></div>
-        <div style="flex:1;"><label class="lbl">End Date</label><input id="edit-end-input" type="date" class="field" style="font-size:14px;padding:10px;"></div>
+        <div style="flex:1;"><label class="lbl">Start Date</label><input id="edit-start-input" type="date" class="field" style="padding:10px;"></div>
+        <div style="flex:1;"><label class="lbl">End Date</label><input id="edit-end-input" type="date" class="field" style="padding:10px;"></div>
       </div>
       <div class="btn-row">
-        <button class="btn" style="font-size:14px;background:#f4f2ed;" onclick="closeEditTripModal()">Cancel</button>
-        <button class="btn btn-dark" style="font-size:14px;padding:10px 20px;" onclick="saveTripDetails()">Save</button>
+        <button class="btn" style="background:#f4f2ed;" onclick="closeEditTripModal()">Cancel</button>
+        <button class="btn btn-dark" style="padding:10px 20px;" onclick="saveTripDetails()">Save</button>
       </div>
     </div>
   </div>
@@ -199,7 +199,7 @@
         <h3 id="event-modal-title">New Event</h3>
         <button class="x-btn" onclick="closeEventModal()">✕</button>
       </div>
-      <input id="event-title" type="text" class="field" placeholder="Add title..." style="font-size:17px;font-weight:600;margin-bottom:14px;">
+      <input id="event-title" type="text" class="field" placeholder="Add title..." style="margin-bottom:14px;">
       <div class="row">
         <button class="icon-pick" onclick="toggleEmojiPicker()"><span id="selected-emoji-display">📌</span></button>
         <span class="hint">Tap to change icon</span>
@@ -231,7 +231,7 @@
     <div class="card" style="max-width:300px;padding:16px;">
       <div class="m-head" style="margin-bottom:10px;">
         <span style="font-weight:800;font-size:15px;">Select Icon</span>
-        <button class="x-btn" style="font-size:18px;" onclick="toggleEmojiPicker()">✕</button>
+        <button class="x-btn" onclick="toggleEmojiPicker()">✕</button>
       </div>
       <div id="emoji-grid"></div>
     </div>
