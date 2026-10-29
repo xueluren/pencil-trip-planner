@@ -2,507 +2,651 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pencil Trip Planner - Tahiti</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Pencil Trip Planner - Tahiti Dive & Chill</title>
     <style>
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
         body {
-            font-family: 'Noto Sans SC', sans-serif;
-            background-color: #fcfcfc;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background: #e9e7e2;
             color: #111;
             user-select: none;
+            -webkit-user-select: none;
         }
-        .sketch-border {
-            border: 2px solid #111;
-            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+        #phone {
+            max-width: 430px;
+            margin: 0 auto;
+            height: 100dvh;
+            background: #faf9f5;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 48px rgba(0,0,0,.14);
+        }
+        /* hand-drawn circle highlight for key nodes */
+        .sketch-circle {
+            border: 2.5px solid #111;
+            border-radius: 48% 52% 55% 45% / 58% 46% 54% 42%;
+            background: #fff;
         }
         .sketch-box {
             border: 2px solid #111;
-            border-radius: 4px;
-        }
-        .sketch-circle {
-            border: 2px solid #111;
-            border-radius: 50% 50% 50% 50% / 60% 40% 60% 40%;
+            border-radius: 10px;
+            background: #fff;
         }
         .sketch-btn {
             border: 2px solid #111;
             border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
-            box-shadow: 2px 2px 0px #111;
-            transition: all 0.1s ease;
+            box-shadow: 2px 2px 0 #111;
+            transition: all .1s ease;
         }
-        .sketch-btn:active {
-            transform: translate(2px, 2px);
-            box-shadow: 0px 0px 0px #111;
+        .sketch-btn:active { transform: translate(2px,2px); box-shadow: 0 0 0 #111; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* overview day column */
+        .day-col {
+            background: #fff;
+            border: 2px solid #111;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform .12s ease;
         }
-        /* Hide scrollbar for clean aesthetic */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+        .day-col:active { transform: scale(.97); }
+        .day-col.selected { box-shadow: 0 0 0 2.5px #111; }
+        .date-head {
+            text-align: center;
+            font-weight: 800;
+            font-size: 19px;
+            padding: 7px 0 5px;
+            border-bottom: 2px solid #111;
+            line-height: 1;
         }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        .day-body { position: relative; height: 260px; }
+        .act-dot {
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 25px;
+            line-height: 1;
+            cursor: pointer;
         }
+        .key-node {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 9px;
+            min-width: 52px;
+            min-height: 52px;
+        }
+        .key-node .tag { font-size: 12px; font-weight: 800; margin-top: 1px; }
+
+        /* detail day strip */
+        .strip-day {
+            flex: 0 0 auto;
+            width: 62px;
+            background: #fff;
+            border: 2px solid #111;
+            border-radius: 12px;
+            padding: 8px 0;
+            text-align: center;
+            cursor: pointer;
+        }
+        .strip-day .wd { font-size: 10px; font-weight: 700; color: #888; letter-spacing: .5px; }
+        .strip-day .dn { font-size: 20px; font-weight: 800; margin-top: 2px; }
+        .strip-day.selected { background: #111; color: #fff; }
+        .strip-day.selected .wd { color: #bbb; }
+
+        /* timeline */
+        .hour-row { position: relative; border-bottom: 1px solid #e5e2da; }
+        .hour-label {
+            position: absolute; left: 0; top: -9px; width: 56px;
+            text-align: right; padding-right: 10px;
+            font-size: 12px; color: #a3a09a; font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+        .event-block {
+            position: absolute;
+            background: #fff;
+            border: 2px solid #111;
+            border-radius: 10px;
+            padding: 8px 10px;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 1.5px 1.5px 0 rgba(17,17,17,.15);
+        }
+        .event-block .et { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 7px; }
+        .event-block .es { font-size: 12px; color: #6b6862; margin-top: 3px; font-variant-numeric: tabular-nums; }
+
+        #fab {
+            position: absolute;
+            bottom: 26px; left: 50%;
+            transform: translateX(-50%);
+            width: 118px; height: 76px;
+            background: #111;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,.35);
+            z-index: 30;
+        }
+        #fab:active { transform: translateX(-50%) scale(.95); }
+        #toast {
+            position: absolute;
+            bottom: 116px; left: 50%;
+            transform: translateX(-50%) translateY(8px);
+            background: #111; color: #fff;
+            font-size: 13px; font-weight: 600;
+            padding: 9px 16px; border-radius: 999px;
+            opacity: 0; pointer-events: none;
+            transition: all .25s ease;
+            white-space: nowrap;
+            z-index: 31;
+        }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .modal-mask {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,.4);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px; z-index: 40;
+        }
+        .hidden { display: none !important; }
+        input, textarea, select { font-family: inherit; }
     </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden bg-[#faf9f5]">
+<body>
+<div id="phone">
 
     <!-- TOP HEADER -->
-    <header class="flex items-center justify-between px-4 py-3 border-b-2 border-black bg-white z-20 shrink-0">
-        <button onclick="toggleSidebar()" class="p-1 hover:bg-gray-100 rounded-lg">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
-        </button>
-        <div class="text-center">
-            <div id="trip-title" class="font-bold text-lg tracking-wide">Tahiti Dive & Chill</div>
-            <div id="trip-subtitle" class="text-xs text-gray-500 font-medium">Jan 10 - Jan 23, 2027 • 14 Days</div>
+    <header style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px;background:#fff;border-bottom:2.5px solid #111;flex:0 0 auto;z-index:20;">
+        <button onclick="toggleSidebar()" style="background:none;border:none;font-size:26px;cursor:pointer;padding:2px 6px;line-height:1;">☰</button>
+        <div style="text-align:center;">
+            <div id="trip-title" style="font-weight:800;font-size:21px;letter-spacing:.2px;">Tahiti Dive &amp; Chill</div>
+            <div id="trip-subtitle" style="font-size:13px;color:#6b6862;font-weight:600;margin-top:3px;">Jan 10 - Jan 23, 2027 • 14 Days</div>
         </div>
-        <button onclick="openEditTripModal()" class="p-1 hover:bg-gray-100 rounded-lg">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-            </svg>
-        </button>
+        <button onclick="openEditTripModal()" style="background:none;border:none;font-size:22px;cursor:pointer;padding:2px 6px;">✎</button>
     </header>
 
-    <!-- MAIN APP CONTAINER -->
-    <div class="flex-1 flex flex-col overflow-hidden relative">
-
-        <!-- COLLAPSIBLE OVERVIEW STRIP (Top sticky when day selected) -->
-        <div id="overview-strip" class="bg-white border-b-2 border-black shrink-0 transition-all duration-300 overflow-hidden">
-            <!-- Calendar Grid Header (Mon-Sun) -->
-            <div class="grid grid-cols-7 text-center py-2 border-b border-black text-xs font-bold bg-gray-50">
-                <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
-            </div>
-            <!-- Calendar Cells Container -->
-            <div id="calendar-grid" class="grid grid-cols-7 bg-white">
-                <!-- Dynamically injected grid cells -->
-            </div>
+    <!-- ============ OVERVIEW ============ -->
+    <div id="overview" style="flex:1;overflow-y:auto;padding:12px 10px 110px;">
+        <div class="grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;margin-bottom:6px;">
+            <div style="font-size:11px;font-weight:800;color:#a3a09a;">SUN</div>
+            <div style="font-size:11px;font-weight:800;">MON</div>
+            <div style="font-size:11px;font-weight:800;">TUE</div>
+            <div style="font-size:11px;font-weight:800;">WED</div>
+            <div style="font-size:11px;font-weight:800;">THU</div>
+            <div style="font-size:11px;font-weight:800;">FRI</div>
+            <div style="font-size:11px;font-weight:800;color:#a3a09a;">SAT</div>
         </div>
+        <div id="day-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;"></div>
+    </div>
 
-        <!-- DETAIL VIEW CONTAINER (Google Calendar Style 00:00 - 23:00) -->
-        <div id="detail-view" class="flex-1 flex flex-col bg-[#faf9f5] overflow-hidden hidden">
-            <!-- Pull-down handle to return to overview -->
-            <div onclick="closeDetailView()" class="w-full py-2 bg-white border-b-2 border-black flex items-center justify-center cursor-pointer shrink-0 hover:bg-gray-50">
-                <div class="w-12 h-1.5 bg-black rounded-full sketch-circle"></div>
-            </div>
-
-            <!-- Scrollable 24-Hour Timeline -->
-            <div id="hourly-timeline" class="flex-1 overflow-y-auto relative p-2">
-                <!-- Dynamically injected hour slots -->
+    <!-- ============ DETAIL ============ -->
+    <div id="detail" class="hidden" style="flex:1;flex-direction:column;overflow:hidden;">
+        <!-- day strip -->
+        <div style="background:#fff;border-bottom:2.5px solid #111;padding:12px 0 12px 12px;flex:0 0 auto;">
+            <div id="day-strip" class="no-scrollbar" style="display:flex;gap:8px;overflow-x:auto;padding-right:12px;"></div>
+        </div>
+        <!-- drag handle -->
+        <div onclick="closeDetail()" style="background:#fff;border-bottom:2.5px solid #111;padding:10px 0;display:flex;justify-content:center;cursor:pointer;flex:0 0 auto;">
+            <div style="width:64px;height:7px;background:#111;border-radius:999px;"></div>
+        </div>
+        <!-- timeline -->
+        <div id="timeline-wrap" style="flex:1;overflow-y:auto;position:relative;background:#faf9f5;">
+            <div id="timeline" style="position:relative;">
+                <div id="hours"></div>
+                <div id="events-layer" style="position:absolute;top:0;bottom:0;left:64px;right:10px;"></div>
             </div>
         </div>
     </div>
 
-    <!-- SIDEBAR (TRIP SWITCHER) -->
-    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 z-40 hidden transition-opacity"></div>
-    <div id="sidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-white border-r-2 border-black z-50 transform -translate-x-full transition-transform duration-300 flex flex-col p-4">
-        <div class="flex items-center justify-between mb-6 pb-2 border-b-2 border-black">
-            <h2 class="font-bold text-lg">My Trips</h2>
-            <button onclick="toggleSidebar()" class="p-1 font-bold">✕</button>
+    <!-- AI FAB -->
+    <button id="fab" onclick="onFabTap()" aria-label="AI assistant">
+        <svg width="46" height="46" viewBox="0 0 24 24">
+            <defs>
+                <linearGradient id="spark" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#ff5f6d"/><stop offset=".35" stop-color="#ffb347"/><stop offset=".65" stop-color="#3ddc84"/><stop offset="1" stop-color="#4facfe"/>
+                </linearGradient>
+            </defs>
+            <path d="M12 2.5c.65 4.9 2.8 7.05 7.7 7.7-4.9.65-7.05 2.8-7.7 7.7-.65-4.9-2.8-7.05-7.7-7.7 4.9-.65 7.05-2.8 7.7-7.7z" fill="url(#spark)"/>
+            <path d="M18.6 14.6c.3 2 1.2 2.9 3.2 3.2-2 .3-2.9 1.2-3.2 3.2-.3-2-1.2-2.9-3.2-3.2 2-.3 2.9-1.2 3.2-3.2z" fill="url(#spark)" opacity=".9"/>
+        </svg>
+    </button>
+    <div id="toast">✨ AI 行程助手即将上线，敬请期待</div>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="hidden" style="position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:44;"></div>
+    <div id="sidebar" style="position:absolute;top:0;left:0;bottom:0;width:270px;background:#fff;border-right:2.5px solid #111;z-index:45;transform:translateX(-105%);transition:transform .28s ease;display:flex;flex-direction:column;padding:18px 16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:10px;border-bottom:2.5px solid #111;">
+            <h2 style="margin:0;font-size:19px;font-weight:800;">My Trips</h2>
+            <button onclick="toggleSidebar()" style="background:none;border:none;font-size:18px;font-weight:800;cursor:pointer;">✕</button>
         </div>
-        <div id="trip-list" class="flex-1 overflow-y-auto space-y-3">
-            <!-- Trip items -->
-        </div>
+        <div id="trip-list" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;"></div>
     </div>
 
     <!-- EDIT TRIP MODAL -->
-    <div id="edit-trip-modal" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white sketch-box p-6 w-full max-w-sm shadow-xl space-y-4">
-            <h3 class="font-bold text-lg border-b border-black pb-2">Edit Trip Details</h3>
-            <div>
-                <label class="block text-xs font-bold mb-1">Trip Title</label>
-                <input type="text" id="edit-title-input" class="w-full sketch-box p-2 text-sm focus:outline-none">
-            </div>
-            <div class="flex space-x-2">
-                <div class="flex-1">
-                    <label class="block text-xs font-bold mb-1">Start Date</label>
-                    <input type="date" id="edit-start-input" class="w-full sketch-box p-2 text-sm focus:outline-none">
+    <div id="edit-trip-modal" class="modal-mask hidden">
+        <div style="background:#fff;border:3px solid #111;border-radius:16px;width:100%;max-width:340px;padding:22px;box-shadow:5px 5px 0 #111;">
+            <h3 style="margin:0 0 14px;font-size:19px;font-weight:800;padding-bottom:8px;border-bottom:2px solid #111;">Edit Trip Details</h3>
+            <label style="display:block;font-size:12px;font-weight:800;margin-bottom:4px;">Trip Title</label>
+            <input id="edit-title-input" type="text" style="width:100%;border:2px solid #111;border-radius:10px;padding:10px;font-size:15px;margin-bottom:12px;">
+            <div style="display:flex;gap:8px;margin-bottom:16px;">
+                <div style="flex:1;">
+                    <label style="display:block;font-size:12px;font-weight:800;margin-bottom:4px;">Start Date</label>
+                    <input id="edit-start-input" type="date" style="width:100%;border:2px solid #111;border-radius:10px;padding:10px;font-size:14px;">
                 </div>
-                <div class="flex-1">
-                    <label class="block text-xs font-bold mb-1">End Date</label>
-                    <input type="date" id="edit-end-input" class="w-full sketch-box p-2 text-sm focus:outline-none">
+                <div style="flex:1;">
+                    <label style="display:block;font-size:12px;font-weight:800;margin-bottom:4px;">End Date</label>
+                    <input id="edit-end-input" type="date" style="width:100%;border:2px solid #111;border-radius:10px;padding:10px;font-size:14px;">
                 </div>
             </div>
-            <div class="flex justify-end space-x-2 pt-2">
-                <button onclick="closeEditTripModal()" class="px-4 py-1.5 text-sm sketch-btn bg-gray-100">Cancel</button>
-                <button onclick="saveTripDetails()" class="px-4 py-1.5 text-sm sketch-btn bg-black text-white">Save</button>
+            <div style="display:flex;justify-content:flex-end;gap:10px;">
+                <button onclick="closeEditTripModal()" class="sketch-btn" style="padding:8px 18px;font-size:14px;font-weight:700;background:#f4f2ed;cursor:pointer;">Cancel</button>
+                <button onclick="saveTripDetails()" class="sketch-btn" style="padding:8px 20px;font-size:14px;font-weight:700;background:#111;color:#fff;cursor:pointer;">Save</button>
             </div>
         </div>
     </div>
 
-    <!-- NEW EVENT MODAL (Google Calendar Style) -->
-    <div id="event-modal" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white sketch-box p-6 w-full max-w-md shadow-xl space-y-4">
-            <div class="flex justify-between items-center border-b border-black pb-2">
-                <h3 class="font-bold text-lg">Add Activity</h3>
-                <button onclick="closeEventModal()" class="font-bold">✕</button>
+    <!-- NEW / EDIT EVENT MODAL -->
+    <div id="event-modal" class="modal-mask hidden">
+        <div style="background:#fff;border:3px solid #111;border-radius:18px;width:100%;max-width:400px;padding:22px;box-shadow:6px 6px 0 rgba(17,17,17,.85);max-height:94%;overflow-y:auto;" class="no-scrollbar">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <h3 id="event-modal-title" style="margin:0;font-size:24px;font-weight:800;">New Event</h3>
+                <button onclick="closeEventModal()" style="background:none;border:none;font-size:24px;font-weight:700;cursor:pointer;line-height:1;">✕</button>
             </div>
-            <div>
-                <label class="block text-xs font-bold mb-1">Title</label>
-                <input type="text" id="event-title" placeholder="e.g., Blue Corner Dive Site" class="w-full sketch-box p-2 text-sm focus:outline-none">
+            <input id="event-title" type="text" placeholder="Add title..." style="width:100%;border:2px solid #111;border-radius:10px;padding:14px;font-size:17px;font-weight:600;margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                <button onclick="toggleEmojiPicker()" style="width:64px;height:64px;flex:0 0 auto;border:2px solid #111;border-radius:10px;background:#fff;font-size:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;"><span id="selected-emoji-display">📌</span></button>
+                <span style="color:#8a8781;font-size:15px;font-weight:600;">Tap to change icon</span>
             </div>
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <label class="block text-xs font-bold mb-1">Start Time</label>
-                    <input type="time" id="event-time" class="w-full sketch-box p-2 text-sm focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold mb-1">Icon / Category</label>
-                    <div id="emoji-picker-trigger" onclick="toggleEmojiPicker()" class="sketch-box p-2 text-sm flex items-center justify-between cursor-pointer bg-white">
-                        <span id="selected-emoji-display" class="text-lg">✈️</span>
-                        <span class="text-xs text-gray-500">▼</span>
-                    </div>
-                </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                <span style="font-size:22px;flex:0 0 auto;">🕐</span>
+                <input id="event-start" type="time" value="15:00" style="flex:1;min-width:0;border:2px solid #111;border-radius:10px;padding:12px 6px;font-size:16px;font-weight:600;text-align:center;">
+                <span style="color:#8a8781;font-weight:600;flex:0 0 auto;">to</span>
+                <input id="event-end" type="time" value="16:00" style="flex:1;min-width:0;border:2px solid #111;border-radius:10px;padding:12px 6px;font-size:16px;font-weight:600;text-align:center;">
             </div>
-            <div>
-                <label class="block text-xs font-bold mb-1">Location</label>
-                <input type="text" id="event-location" placeholder="e.g., Pier 3, Rangiroa" class="w-full sketch-box p-2 text-sm focus:outline-none">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                <span style="font-size:22px;flex:0 0 auto;">📍</span>
+                <input id="event-location" type="text" placeholder="Add location" style="flex:1;min-width:0;border:2px solid #111;border-radius:10px;padding:12px;font-size:16px;">
             </div>
-            <div>
-                <label class="block text-xs font-bold mb-1">Notes</label>
-                <textarea id="event-notes" placeholder="Booking ref, gear rental info..." class="w-full sketch-box p-2 text-sm h-20 focus:outline-none resize-none"></textarea>
+            <div style="display:flex;gap:10px;margin-bottom:20px;">
+                <span style="font-size:22px;flex:0 0 auto;">📝</span>
+                <textarea id="event-notes" placeholder="Add details or notes..." style="flex:1;min-width:0;border:2px solid #111;border-radius:10px;padding:12px;font-size:16px;min-height:96px;resize:none;"></textarea>
             </div>
-            <div class="flex justify-end space-x-2 pt-2">
-                <button onclick="closeEventModal()" class="px-4 py-1.5 text-sm sketch-btn bg-gray-100">Cancel</button>
-                <button onclick="saveEvent()" class="px-4 py-1.5 text-sm sketch-btn bg-black text-white">Save Event</button>
+            <div style="display:flex;justify-content:flex-end;gap:10px;align-items:center;">
+                <button id="delete-event-btn" onclick="deleteCurrentEvent()" class="hidden" style="margin-right:auto;background:none;border:none;color:#d33;font-size:15px;font-weight:700;cursor:pointer;">Delete</button>
+                <button onclick="closeEventModal()" class="sketch-btn" style="padding:10px 22px;font-size:16px;font-weight:700;background:#fff;cursor:pointer;">Cancel</button>
+                <button onclick="saveEvent()" class="sketch-btn" style="padding:10px 30px;font-size:16px;font-weight:700;background:#111;color:#fff;cursor:pointer;">Save</button>
             </div>
         </div>
     </div>
 
-    <!-- EMOJI PICKER POPUP MODAL -->
-    <div id="emoji-picker-modal" class="fixed inset-0 bg-black/30 z-60 hidden flex items-center justify-center p-4">
-        <div class="bg-white sketch-box p-4 w-72 shadow-2xl space-y-3">
-            <div class="flex justify-between items-center border-b border-black pb-2">
-                <span class="font-bold text-sm">Select Icon</span>
-                <button onclick="toggleEmojiPicker()" class="font-bold text-sm">✕</button>
+    <!-- EMOJI PICKER -->
+    <div id="emoji-picker-modal" class="modal-mask hidden" style="z-index:50;">
+        <div style="background:#fff;border:3px solid #111;border-radius:16px;padding:16px;width:300px;box-shadow:5px 5px 0 #111;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-weight:800;font-size:15px;">Select Icon</span>
+                <button onclick="toggleEmojiPicker()" style="background:none;border:none;font-size:18px;font-weight:700;cursor:pointer;">✕</button>
             </div>
-            <div id="emoji-grid" class="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto p-1">
-                <!-- Dynamically loaded emojis -->
-            </div>
+            <div id="emoji-grid" class="no-scrollbar" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-height:230px;overflow-y:auto;"></div>
         </div>
     </div>
 
-    <script>
-        // Mock Data for Trips
-        let trips = [
-            {
-                id: 1,
-                title: "Tahiti Dive & Chill",
-                startDate: "2027-01-10",
-                endDate: "2027-01-23",
-                days: generateMockDays("2027-01-10", 14)
-            },
-            {
-                id: 2,
-                title: "Kyoto Autumn Getaway",
-                startDate: "2026-11-12",
-                endDate: "2026-11-16",
-                days: generateMockDays("2026-11-12", 5)
-            }
-        ];
+<script>
+    // ---------- Data ----------
+    // Tahiti 14-day itinerary, matching the design mockups
+    const TAHITI = [
+        { d: "2027-01-10", acts: [
+            { t: "08:00", dur: 300, e: "✈️", title: "SFO → PPT", loc: "San Francisco Intl", notes: "UA115", key: true },
+            { t: "16:00", dur: 60,  e: "🏨", tag: "In", title: "InterContinental Tahiti", loc: "Tahiti", notes: "Check-in", key: true } ] },
+        { d: "2027-01-11", acts: [
+            { t: "08:30", dur: 180, e: "🤿", title: "Lagoon Scuba", loc: "Rangiroa", notes: "Manta ray cleaning station" },
+            { t: "13:00", dur: 120, e: "🍹", title: "Beach Chill", loc: "Les Roulottes" } ] },
+        { d: "2027-01-12", acts: [
+            { t: "10:00", dur: 120, e: "🚗", title: "Island Drive", loc: "Tahiti Nui" } ] },
+        { d: "2027-01-13", acts: [
+            { t: "09:00", dur: 180, e: "🛥️", title: "Boat Tour", loc: "Moorea" },
+            { t: "14:00", dur: 120, e: "🤿", title: "Reef Dive", loc: "Tiahura" } ] },
+        { d: "2027-01-14", acts: [
+            { t: "10:00", dur: 240, e: "⛱️", title: "Beach Day", loc: "Temae Beach" } ] },
+        { d: "2027-01-15", acts: [
+            { t: "19:00", dur: 120, e: "🍽️", title: "Seafood Dinner", loc: "Papeete" } ] },
+        { d: "2027-01-16", acts: [
+            { t: "08:00", dur: 240, e: "🥾", title: "Volcano Hike", loc: "Mt. Aorai trailhead" } ] },
+        { d: "2027-01-17", acts: [
+            { t: "09:00", dur: 120, e: "🏄", title: "Surf Lesson", loc: "Taapuna" } ] },
+        { d: "2027-01-18", acts: [
+            { t: "15:00", dur: 90, e: "🍹", title: "Sunset Cocktails", loc: "Beach bar" } ] },
+        { d: "2027-01-19", acts: [
+            { t: "09:00", dur: 150, e: "🤿", title: "Manta Dive", loc: "Tiputa Pass" } ] },
+        { d: "2027-01-20", acts: [
+            { t: "11:00", dur: 120, e: "🛍️", title: "Market Shopping", loc: "Papeete Market" } ] },
+        { d: "2027-01-21", acts: [
+            { t: "10:00", dur: 180, e: "⛵", title: "Sail Trip", loc: "Lagoon" } ] },
+        { d: "2027-01-22", acts: [
+            { t: "18:00", dur: 90, e: "🥂", title: "Farewell Toast", loc: "Overwater bungalow deck" } ] },
+        { d: "2027-01-23", acts: [
+            { t: "11:00", dur: 60,  e: "🏨", tag: "Out", title: "Resort Checkout", loc: "Tahiti", key: true },
+            { t: "22:00", dur: 240, e: "✈️", title: "PPT → SFO", loc: "Faa'a Intl", notes: "UA116", key: true } ] },
+    ];
 
-        let currentTripId = 1;
-        let selectedDayIndex = null;
-        let selectedHour = 9;
-
-        const allEmojis = ['✈️', '🚆', '🚗', '🛥️', '🤿', '🏨 In', '🏨 Out', '🍽️', '☕', '🏛️', '🎟️', '🛍️', '📸', '🌊', '🌴', '📌'];
-        let currentSelectedEmoji = '✈️';
-
-        function generateMockDays(startDateStr, count) {
-            let days = [];
-            let start = new Date(startDateStr);
-            for (let i = 0; i < count; i++) {
-                let d = new Date(start);
-                d.setDate(start.getDate() + i);
-                let dateStr = d.toISOString().split('T')[0];
-                let activities = [];
-
-                if (i === 0) {
-                    activities.push({ id: 101, time: "08:00", title: "SFO -> PPT Flight", emoji: "✈️", location: "San Francisco International", notes: "UA123" });
-                    activities.push({ id: 102, time: "16:00", title: "InterContinental Resort", emoji: "🏨 In", location: "Tahiti", notes: "Check-in" });
-                } else if (i === 5) {
-                    activities.push({ id: 103, time: "09:30", title: "Scuba Dive at Tiputa Pass", emoji: "🤿", location: "Rangiroa", notes: "Manta ray cleaning station" });
-                    activities.push({ id: 104, time: "19:00", title: "Sunset Seafood Dinner", emoji: "🍽️", location: "Les Roulottes", notes: "" });
-                } else if (i === count - 1) {
-                    activities.push({ id: 105, time: "11:00", title: "Resort Checkout", emoji: "🏨 Out", location: "Tahiti", notes: "" });
-                    activities.push({ id: 106, time: "22:00", title: "PPT -> SFO Flight", emoji: "✈️", location: "Faa'a International", notes: "UA124" });
-                } else if (i % 3 === 1) {
-                    activities.push({ id: 107, time: "10:00", title: "Lagoon Tour & Snorkeling", emoji: "🌊", location: "Bora Bora", notes: "Bring underwater camera" });
-                }
-
-                days.push({
-                    date: dateStr,
-                    dayNumber: i + 1,
-                    activities: activities
-                });
-            }
-            return days;
+    function genericDays(startStr, count) {
+        const out = [];
+        const s = new Date(startStr + "T12:00:00");
+        for (let i = 0; i < count; i++) {
+            const d = new Date(s); d.setDate(s.getDate() + i);
+            const acts = [];
+            if (i === 0) acts.push({ t: "08:00", dur: 180, e: "✈️", title: "Outbound flight", key: true });
+            if (i === count - 1) acts.push({ t: "18:00", dur: 180, e: "✈️", title: "Return flight", key: true });
+            else if (i % 2 === 0 && i > 0) acts.push({ t: "10:00", dur: 120, e: "📸", title: "Explore" });
+            out.push({ d: toISODate(d), acts });
         }
+        return out;
+    }
 
-        function getCurrentTrip() {
-            return trips.find(t => t.id === currentTripId);
+    let trips = [
+        { id: 1, title: "Tahiti Dive & Chill", startDate: "2027-01-10", endDate: "2027-01-23",
+          days: TAHITI.map(x => ({ date: x.d, acts: x.acts.map(a => ({ ...a, id: Math.random().toString(36).slice(2) })) })) },
+        { id: 2, title: "Kyoto Autumn Getaway", startDate: "2026-11-12", endDate: "2026-11-16",
+          days: genericDays("2026-11-12", 5) },
+    ];
+
+    let currentTripId = 1;
+    let selectedDayIndex = null;   // overview selection
+    let detailDayIndex = 0;        // detail strip selection
+    let editingActId = null;
+
+    const EMOJIS = ["📌","✈️","🏨","🤿","🍹","🚗","🛥️","⛱️","🏖️","🍽️","🥾","🏄","🛍️","⛵","🥂","☕","🏛️","🎟️","📸","🌊","🌴","🚆","🎿","🎭"];
+    let currentEmoji = "📌";
+
+    const HOUR_H = 64; // px per hour in timeline
+
+    // ---------- Helpers ----------
+    function toISODate(d) {
+        return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+    }
+    function toMin(t) { const [h,m] = t.split(":").map(Number); return h*60+m; }
+    function toTimeStr(min) {
+        min = Math.max(0, Math.min(1439, min));
+        return String(Math.floor(min/60)).padStart(2,"0") + ":" + String(min%60).padStart(2,"0");
+    }
+    function fmtDur(min) {
+        if (min < 60) return min + " min";
+        const h = min/60;
+        return (Number.isInteger(h) ? h : h.toFixed(1)) + " hr";
+    }
+    function fmtMD(iso) {
+        const d = new Date(iso + "T12:00:00");
+        return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+    function fmtMDY(iso) {
+        const d = new Date(iso + "T12:00:00");
+        return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    }
+    function getTrip() { return trips.find(t => t.id === currentTripId); }
+    function esc(s) { return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+    // ---------- Header / sidebar ----------
+    function renderHeader() {
+        const t = getTrip();
+        document.getElementById("trip-title").textContent = t.title;
+        document.getElementById("trip-subtitle").textContent =
+            fmtMD(t.startDate) + " - " + fmtMDY(t.endDate) + " • " + t.days.length + " Days";
+    }
+    function renderSidebar() {
+        const t = getTrip();
+        document.getElementById("trip-list").innerHTML = trips.map(x => `
+            <div onclick="switchTrip(${x.id})" class="sketch-box" style="padding:12px;cursor:pointer;${x.id===t.id?"background:#111;color:#fff;":""}">
+                <div style="font-size:14px;font-weight:800;">${esc(x.title)}</div>
+                <div style="font-size:12px;opacity:.7;margin-top:2px;">${x.startDate} ~ ${x.endDate}</div>
+            </div>`).join("");
+    }
+    function switchTrip(id) {
+        currentTripId = id; selectedDayIndex = null; detailDayIndex = 0;
+        toggleSidebar(); closeDetail();
+        renderHeader(); renderSidebar(); renderOverview();
+    }
+    function toggleSidebar() {
+        const sb = document.getElementById("sidebar");
+        const ov = document.getElementById("sidebar-overlay");
+        const open = sb.style.transform === "translateX(0%)";
+        sb.style.transform = open ? "translateX(-105%)" : "translateX(0%)";
+        ov.classList.toggle("hidden", open);
+    }
+
+    // ---------- Overview: 7-col grid, emojis positioned by time ----------
+    function renderOverview() {
+        const t = getTrip();
+        const grid = document.getElementById("day-grid");
+        const WDS = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+        grid.innerHTML = t.days.map((day, i) => {
+            const d = new Date(day.date + "T12:00:00");
+            const acts = [...day.acts].sort((a,b) => toMin(a.t) - toMin(b.t));
+            const dots = acts.map(a => {
+                const top = (toMin(a.t) / 1440 * 100).toFixed(2);
+                const inner = a.key
+                    ? `<span class="key-node sketch-circle"><span style="font-size:24px;line-height:1;">${a.e}</span>${a.tag?`<span class="tag">${a.tag}</span>`:""}</span>`
+                    : `<span style="font-size:25px;line-height:1;">${a.e}</span>`;
+                return `<div class="act-dot" style="top:${top}%;" title="${esc(a.title)} ${a.t}">${inner}</div>`;
+            }).join("");
+            return `
+            <div class="day-col ${selectedDayIndex===i?"selected":""}" onclick="selectDay(${i})">
+                <div class="date-head">${d.getDate()}</div>
+                <div class="day-body">${dots}</div>
+            </div>`;
+        }).join("");
+    }
+
+    function selectDay(i) {
+        selectedDayIndex = i;
+        detailDayIndex = i;
+        renderOverview();
+        openDetail();
+    }
+
+    // ---------- Detail: day strip + 24h timeline ----------
+    function openDetail() {
+        document.getElementById("overview").classList.add("hidden");
+        const det = document.getElementById("detail");
+        det.classList.remove("hidden");
+        det.style.display = "flex";
+        renderStrip();
+        renderTimeline();
+        requestAnimationFrame(() => {
+            document.getElementById("timeline-wrap").scrollTop = 7 * HOUR_H - 8;
+        });
+    }
+    function closeDetail() {
+        selectedDayIndex = null;
+        const det = document.getElementById("detail");
+        det.classList.add("hidden");
+        det.style.display = "";
+        document.getElementById("overview").classList.remove("hidden");
+        renderOverview();
+    }
+    function renderStrip() {
+        const t = getTrip();
+        const WDS = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+        document.getElementById("day-strip").innerHTML = t.days.map((day, i) => {
+            const d = new Date(day.date + "T12:00:00");
+            return `
+            <div class="strip-day ${detailDayIndex===i?"selected":""}" onclick="pickStripDay(${i})">
+                <div class="wd">${WDS[d.getDay()]}</div>
+                <div class="dn">${d.getDate()}</div>
+            </div>`;
+        }).join("");
+        const sel = document.querySelector("#day-strip .strip-day.selected");
+        if (sel) sel.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+    }
+    function pickStripDay(i) {
+        detailDayIndex = i; selectedDayIndex = i;
+        renderStrip(); renderTimeline(); renderOverview();
+    }
+    function renderTimeline() {
+        const t = getTrip();
+        const day = t.days[detailDayIndex];
+        // hour rows
+        let hours = "";
+        for (let h = 0; h < 24; h++) {
+            hours += `<div class="hour-row" style="height:${HOUR_H}px;">
+                <span class="hour-label">${String(h).padStart(2,"0")}:00</span>
+            </div>`;
         }
+        document.getElementById("hours").innerHTML = hours;
+        // event blocks
+        const layer = document.getElementById("events-layer");
+        layer.innerHTML = day.acts.map(a => {
+            const top = toMin(a.t) / 60 * HOUR_H;
+            const h = Math.max(a.dur / 60 * HOUR_H, 48);
+            const sub = `${a.t} • ${fmtDur(a.dur)}${a.loc ? " • " + esc(a.loc) : ""}`;
+            return `
+            <div class="event-block" style="top:${top}px;height:${h}px;left:6px;right:2px;"
+                 onclick="event.stopPropagation();openEditEvent('${a.id}')">
+                <div class="et"><span>${a.e}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(a.title)}</span></div>
+                <div class="es">${sub}</div>
+            </div>`;
+        }).join("");
+        // click empty area -> new event at that time
+        layer.onclick = (ev) => {
+            const rect = layer.getBoundingClientRect();
+            const y = ev.clientY - rect.top + document.getElementById("timeline-wrap").scrollTop - layer.offsetTop;
+            const mins = Math.round((y / HOUR_H * 60) / 15) * 15;
+            openNewEvent(toTimeStr(mins));
+        };
+    }
 
-        function initApp() {
-            renderSidebar();
-            renderTripHeader();
-            renderCalendar();
+    // ---------- New / Edit Event modal ----------
+    function openNewEvent(startStr) {
+        editingActId = null;
+        document.getElementById("event-modal-title").textContent = "New Event";
+        document.getElementById("event-title").value = "";
+        const s = startStr || "15:00";
+        document.getElementById("event-start").value = s;
+        document.getElementById("event-end").value = toTimeStr(toMin(s) + 60);
+        document.getElementById("event-location").value = "";
+        document.getElementById("event-notes").value = "";
+        currentEmoji = "📌";
+        document.getElementById("selected-emoji-display").textContent = currentEmoji;
+        document.getElementById("delete-event-btn").classList.add("hidden");
+        document.getElementById("event-modal").classList.remove("hidden");
+    }
+    function openEditEvent(actId) {
+        const t = getTrip();
+        const a = t.days[detailDayIndex].acts.find(x => x.id === actId);
+        if (!a) return;
+        editingActId = actId;
+        document.getElementById("event-modal-title").textContent = "Edit Event";
+        document.getElementById("event-title").value = a.title || "";
+        document.getElementById("event-start").value = a.t;
+        document.getElementById("event-end").value = toTimeStr(toMin(a.t) + (a.dur || 60));
+        document.getElementById("event-location").value = a.loc || "";
+        document.getElementById("event-notes").value = a.notes || "";
+        currentEmoji = a.e || "📌";
+        document.getElementById("selected-emoji-display").textContent = currentEmoji;
+        document.getElementById("delete-event-btn").classList.remove("hidden");
+        document.getElementById("event-modal").classList.remove("hidden");
+    }
+    function closeEventModal() {
+        document.getElementById("event-modal").classList.add("hidden");
+        document.getElementById("emoji-picker-modal").classList.add("hidden");
+        editingActId = null;
+    }
+    function saveEvent() {
+        const title = document.getElementById("event-title").value.trim();
+        const start = document.getElementById("event-start").value || "09:00";
+        const end = document.getElementById("event-end").value || "10:00";
+        let dur = toMin(end) - toMin(start);
+        if (dur <= 0) dur += 24 * 60;
+        if (dur <= 0) dur = 60;
+        const loc = document.getElementById("event-location").value.trim();
+        const notes = document.getElementById("event-notes").value.trim();
+        if (!title) { alert("Please add a title"); return; }
+
+        const t = getTrip();
+        const day = t.days[detailDayIndex];
+        if (editingActId) {
+            const a = day.acts.find(x => x.id === editingActId);
+            if (a) { a.title = title; a.t = start; a.dur = dur; a.e = currentEmoji; a.loc = loc; a.notes = notes;
+                     if (currentEmoji !== "🏨") delete a.tag; }
+        } else {
+            day.acts.push({ id: "a" + Date.now().toString(36), t: start, dur, e: currentEmoji, title, loc, notes });
         }
+        closeEventModal();
+        renderTimeline(); renderOverview(); renderStrip();
+    }
+    function deleteCurrentEvent() {
+        if (!editingActId) return;
+        const t = getTrip();
+        const day = t.days[detailDayIndex];
+        day.acts = day.acts.filter(x => x.id !== editingActId);
+        closeEventModal();
+        renderTimeline(); renderOverview(); renderStrip();
+    }
 
-        function renderSidebar() {
-            const listEl = document.getElementById('trip-list');
-            listEl.innerHTML = trips.map(t => `
-                <div onclick="switchTrip(${t.id})" class="p-3 sketch-box cursor-pointer hover:bg-gray-50 ${t.id === currentTripId ? 'bg-black text-white font-bold' : ''}">
-                    <div class="text-sm">${t.title}</div>
-                    <div class="text-xs opacity-75">${t.startDate} ~ ${t.endDate}</div>
-                </div>
-            `).join('');
+    // ---------- Emoji picker ----------
+    function toggleEmojiPicker() {
+        const p = document.getElementById("emoji-picker-modal");
+        const opening = p.classList.contains("hidden");
+        p.classList.toggle("hidden");
+        if (opening) {
+            document.getElementById("emoji-grid").innerHTML = EMOJIS.map(e => `
+                <div onclick="pickEmoji('${e}')" style="font-size:26px;text-align:center;padding:8px;cursor:pointer;border:2px solid transparent;border-radius:10px;"
+                     onmouseover="this.style.background='#f4f2ed'" onmouseout="this.style.background=''">${e}</div>`).join("");
         }
+    }
+    function pickEmoji(e) {
+        currentEmoji = e;
+        document.getElementById("selected-emoji-display").textContent = e;
+        document.getElementById("emoji-picker-modal").classList.add("hidden");
+    }
 
-        function switchTrip(id) {
-            currentTripId = id;
-            selectedDayIndex = null;
-            toggleSidebar();
-            closeDetailView();
-            renderTripHeader();
-            renderCalendar();
+    // ---------- Edit trip ----------
+    function openEditTripModal() {
+        const t = getTrip();
+        document.getElementById("edit-title-input").value = t.title;
+        document.getElementById("edit-start-input").value = t.startDate;
+        document.getElementById("edit-end-input").value = t.endDate;
+        document.getElementById("edit-trip-modal").classList.remove("hidden");
+    }
+    function closeEditTripModal() {
+        document.getElementById("edit-trip-modal").classList.add("hidden");
+    }
+    function saveTripDetails() {
+        const title = document.getElementById("edit-title-input").value.trim();
+        const start = document.getElementById("edit-start-input").value;
+        const end = document.getElementById("edit-end-input").value;
+        if (!title || !start || !end) { alert("Please fill in all fields"); return; }
+        const t = getTrip();
+        const datesChanged = (start !== t.startDate || end !== t.endDate);
+        t.title = title; t.startDate = start; t.endDate = end;
+        if (datesChanged) {
+            const n = Math.round((new Date(end+"T12:00:00") - new Date(start+"T12:00:00")) / 86400000) + 1;
+            t.days = genericDays(start, Math.max(1, n));
+            detailDayIndex = 0; selectedDayIndex = null;
+            closeDetail();
         }
+        closeEditTripModal();
+        renderHeader(); renderSidebar(); renderOverview();
+    }
 
-        function renderTripHeader() {
-            const trip = getCurrentTrip();
-            document.getElementById('trip-title').innerText = trip.title;
-            const startFmt = formatDateDisplay(trip.startDate);
-            const endFmt = formatDateDisplay(trip.endDate);
-            document.getElementById('trip-subtitle').innerText = `${startFmt} - ${endFmt} • ${trip.days.length} Days`;
-        }
+    // ---------- FAB / toast ----------
+    let toastTimer = null;
+    function onFabTap() {
+        const toast = document.getElementById("toast");
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
+    }
 
-        function formatDateDisplay(dateStr) {
-            const d = new Date(dateStr);
-            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        }
-
-        function renderCalendar() {
-            const trip = getCurrentTrip();
-            const gridEl = document.getElementById('calendar-grid');
-
-            // Calculate first day offset for grid alignment (Sunday = 0)
-            const firstDate = new Date(trip.days[0].date);
-            const startDayOfWeek = firstDate.getDay();
-
-            let html = '';
-            // Empty offset cells before trip starts
-            for (let i = 0; i < startDayOfWeek; i++) {
-                html += `<div class="border-b border-r border-gray-200 bg-gray-50/50 min-h-[90px]"></div>`;
-            }
-
-            // Render each trip day
-            trip.days.forEach((dayObj, index) => {
-                const d = new Date(dayObj.date);
-                const dayNum = d.getDate();
-                const isSelected = selectedDayIndex === index;
-
-                // Sort activities by time
-                const sortedActs = [...dayObj.activities].sort((a,b) => a.time.localeCompare(b.time));
-
-                html += `
-                    <div onclick="selectDay(${index})" class="border-b border-r border-black p-1 flex flex-col justify-between cursor-pointer transition-colors relative min-h-[90px] ${isSelected ? 'bg-gray-100 ring-2 ring-black z-10' : 'hover:bg-gray-50'}">
-                        <!-- Date Number with Light Gray Background -->
-                        <div class="flex justify-center mb-1">
-                            <span class="text-xs font-bold px-1.5 py-0.5 bg-gray-200/80 rounded border border-gray-300">${dayNum}</span>
-                        </div>
-                        <!-- Proportional or Sequential Activities -->
-                        <div class="flex-1 flex flex-col space-y-1 overflow-hidden">
-                            ${sortedActs.map(act => {
-                                let iconHTML = act.emoji;
-                                if (act.emoji === '✈️' || act.emoji === '🏨 In' || act.emoji === '🏨 Out') {
-                                    iconHTML = `<span class="inline-flex items-center justify-center px-1 text-[11px] font-bold sketch-circle border-black bg-white">${act.emoji}</span>`;
-                                }
-                                return `
-                                    <div class="text-[10px] truncate flex items-center space-x-1 bg-white/80 px-1 py-0.5 sketch-box">
-                                        <span>${iconHTML}</span>
-                                        <span class="text-gray-700 font-medium">${act.time}</span>
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-                `;
-            });
-
-            gridEl.innerHTML = html;
-        }
-        function selectDay(index) {
-            selectedDayIndex = index;
-            renderCalendar();
-            openDetailView();
-        }
-
-        function openDetailView() {
-            const detailView = document.getElementById('detail-view');
-            detailView.classList.remove('hidden');
-            renderHourlyTimeline();
-        }
-
-        function closeDetailView() {
-            selectedDayIndex = null;
-            document.getElementById('detail-view').classList.add('hidden');
-            renderCalendar();
-        }
-
-        function renderHourlyTimeline() {
-            const trip = getCurrentTrip();
-            const dayObj = trip.days[selectedDayIndex];
-            const timelineEl = document.getElementById('hourly-timeline');
-
-            let html = '';
-            // Generate hours from 00:00 to 23:00
-            for (let hour = 0; hour < 24; hour++) {
-                const hourStr = String(hour).padStart(2, '0') + ':00';
-                const matchingActs = dayObj.activities.filter(a => a.time.startsWith(String(hour).padStart(2, '0')));
-
-                html += `
-                    <div class="flex border-b border-gray-200 min-h-[50px] group relative">
-                        <div class="w-14 text-right pr-2 pt-1 text-xs text-gray-400 font-mono shrink-0">${hourStr}</div>
-                        <div onclick="openEventModalForHour(${hour})" class="flex-1 border-l border-gray-300 pl-2 pt-1 cursor-pointer hover:bg-gray-100/50 relative">
-                            ${matchingActs.map(act => `
-                                <div class="bg-white sketch-box p-2 mb-1 shadow-sm flex items-center justify-between">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-lg">${act.emoji}</span>
-                                        <div>
-                                            <div class="text-xs font-bold">${act.title}</div>
-                                            <div class="text-[10px] text-gray-500">${act.time} ${act.location ? '• ' + act.location : ''}</div>
-                                        </div>
-                                    </div>
-                                    <button onclick="event.stopPropagation(); deleteActivity(${act.id})" class="text-gray-400 hover:text-black text-xs px-1">✕</button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-            timelineEl.innerHTML = html;
-        }
-
-        function openEventModalForHour(hour) {
-            selectedHour = hour;
-            document.getElementById('event-title').value = '';
-            document.getElementById('event-time').value = String(hour).padStart(2, '0') + ':00';
-            document.getElementById('event-location').value = '';
-            document.getElementById('event-notes').value = '';
-            currentSelectedEmoji = '✈️';
-            document.getElementById('selected-emoji-display').innerText = currentSelectedEmoji;
-            document.getElementById('event-modal').classList.remove('hidden');
-        }
-
-        function closeEventModal() {
-            document.getElementById('event-modal').classList.add('hidden');
-        }
-
-        function toggleEmojiPicker() {
-            const picker = document.getElementById('emoji-picker-modal');
-            picker.classList.toggle('hidden');
-            if (!picker.classList.contains('hidden')) {
-                renderEmojiGrid();
-            }
-        }
-
-        function renderEmojiGrid() {
-            const grid = document.getElementById('emoji-grid');
-            grid.innerHTML = allEmojis.map(e => `
-                <div onclick="selectEmoji('${e}')" class="text-center p-2 text-xl cursor-pointer hover:bg-gray-100 sketch-box">${e}</div>
-            `).join('');
-        }
-
-        function selectEmoji(emoji) {
-            currentSelectedEmoji = emoji;
-            document.getElementById('selected-emoji-display').innerText = emoji;
-            toggleEmojiPicker();
-        }
-
-        function saveEvent() {
-            const title = document.getElementById('event-title').value;
-            const time = document.getElementById('event-time').value;
-            const location = document.getElementById('event-location').value;
-            const notes = document.getElementById('event-notes').value;
-
-            if (!title) {
-                alert('Please enter a title');
-                return;
-            }
-
-            const trip = getCurrentTrip();
-            const newAct = {
-                id: Date.now(),
-                title,
-                time: time || '09:00',
-                emoji: currentSelectedEmoji,
-                location,
-                notes
-            };
-
-            trip.days[selectedDayIndex].activities.push(newAct);
-            closeEventModal();
-            renderCalendar();
-            renderHourlyTimeline();
-        }
-
-        function deleteActivity(actId) {
-            const trip = getCurrentTrip();
-            const dayObj = trip.days[selectedDayIndex];
-            dayObj.activities = dayObj.activities.filter(a => a.id !== actId);
-            renderCalendar();
-            renderHourlyTimeline();
-        }
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('hidden');
-        }
-
-        function openEditTripModal() {
-            const trip = getCurrentTrip();
-            document.getElementById('edit-title-input').value = trip.title;
-            document.getElementById('edit-start-input').value = trip.startDate;
-            document.getElementById('edit-end-input').value = trip.endDate;
-            document.getElementById('edit-trip-modal').classList.remove('hidden');
-        }
-
-        function closeEditTripModal() {
-            document.getElementById('edit-trip-modal').classList.add('hidden');
-        }
-
-        function saveTripDetails() {
-            const title = document.getElementById('edit-title-input').value;
-            const start = document.getElementById('edit-start-input').value;
-            const end = document.getElementById('edit-end-input').value;
-
-            if (!title || !start || !end) {
-                alert('Please fill in all fields');
-                return;
-            }
-
-            const trip = getCurrentTrip();
-            trip.title = title;
-            trip.startDate = start;
-            trip.endDate = end;
-
-            // Recompute days length
-            const diffTime = Math.abs(new Date(end) - new Date(start));
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-            trip.days = generateMockDays(start, diffDays);
-
-            closeEditTripModal();
-            renderSidebar();
-            renderTripHeader();
-            renderCalendar();
-            if (selectedDayIndex !== null) closeDetailView();
-        }
-
-        // Initialize on load
-        window.onload = initApp;
-    </script>
+    // ---------- Init ----------
+    renderHeader();
+    renderSidebar();
+    renderOverview();
+</script>
 </body>
 </html>
