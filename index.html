@@ -311,10 +311,11 @@ function renderCalendar(){
     const d=new Date(day.date+"T12:00:00");
     const dots=[...day.acts].sort((a,b)=>toMin(a.t)-toMin(b.t)).map(a=>{
       const top=(toMin(a.t)/1440*100).toFixed(2);
+      const m=a.key?32:15; /* 半高留白：emoji 中心离上下边至少这么远，保证整个不跑出卡片 */
       const inner=a.key
         ? `<span class="key-node"><span style="font-size:24px;line-height:1;">${a.e}</span>${a.tag?`<span class="tag">${a.tag}</span>`:""}</span>`
         : `<span style="font-size:25px;line-height:1;">${a.e}</span>`;
-      return `<div class="act-dot" style="top:${top}%;" title="${esc(a.title)} ${a.t}">${inner}</div>`;
+      return `<div class="act-dot" style="top:clamp(${m}px, ${top}%, calc(100% - ${m}px));" title="${esc(a.title)} ${a.t}">${inner}</div>`;
     }).join("");
     return `<div class="day-card ${selectedDayIndex===i?"sel":""}" onclick="selectDay(${i})">
       <div class="date-head">${d.getDate()}</div><div class="day-body">${dots}</div></div>`;
