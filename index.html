@@ -28,12 +28,16 @@
   /* overview */
   #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
   #overview-strip { background: #fff; border-bottom: 2.5px solid #111; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-  .wd-row { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; padding: 8px 0; border-bottom: 2px solid #111; font-size: 11px; font-weight: 800; background: #f7f6f2; flex: 0 0 auto; }
+  #cal-head { flex: 0 0 auto; background: #fff; border-bottom: 2px solid #111; }
+  #cal-month { font-size: 17px; font-weight: 800; padding: 10px 14px 2px; text-align: left; }
+  .wd-row { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; padding: 6px 0; font-size: 11px; font-weight: 800; background: #fff; }
   .wd-row .we { color: #a3a09a; }
-  #calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 1fr; gap: 6px; padding: 6px; background: #fff; flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; }
-  #calendar-grid::-webkit-scrollbar { display: none; }
-  #overview-end { display: flex; justify-content: center; align-items: center; padding: 6px 0 10px; background: #fff; flex: 0 0 auto; }
-  .day-card { background: #fff; border: 1px solid #dbd8d2; border-radius: 4px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; min-height: 150px; }
+  #calendar-scroll { flex: 1; min-height: 0; overflow-y: auto; background: #faf9f5; position: relative; scrollbar-width: none; }
+  #calendar-scroll::-webkit-scrollbar { display: none; }
+  .month-sec { padding: 8px 6px 4px; }
+  .month-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .day-cell.off { background: #f1f0eb; border: 1px solid #e2e0d8; border-radius: 4px; min-height: 64px; display: flex; align-items: flex-start; justify-content: center; padding-top: 9px; color: #b3b0a7; font-size: 15px; font-weight: 700; }
+  .day-card { background: #fff; border: 1px solid #dbd8d2; border-radius: 4px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; height: 200px; min-height: 200px; }
   .day-card.sel { box-shadow: 0 0 0 2px #111; }
   .day-card:active { transform: scale(.97); }
   .date-head { text-align: center; font-weight: 800; font-size: 19px; line-height: 1; padding: 8px 0 6px; border-bottom: 2px solid #111; background: #f1f0eb; flex: 0 0 auto; }
@@ -133,15 +137,13 @@
   <div id="main">
     <!-- OVERVIEW -->
     <div id="overview-strip">
-      <div class="wd-row">
-        <div class="we">SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div class="we">SAT</div>
+      <div id="cal-head">
+        <div id="cal-month">January 2027</div>
+        <div class="wd-row">
+          <div class="we">SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div class="we">SAT</div>
+        </div>
       </div>
-      <div id="calendar-grid"></div>
-      <div id="overview-end">
-        <svg width="150" height="14" viewBox="0 0 150 14" fill="none" stroke="#a8a49c" stroke-width="2.2" stroke-linecap="round">
-          <path d="M6 8 C 35 4, 60 11, 90 7 S 130 5, 144 8"/>
-        </svg>
-      </div>
+      <div id="calendar-scroll"></div>
     </div>
 
     <!-- DETAIL -->
@@ -311,28 +313,94 @@ function renderHeader(){
 }
 /* 总览时段：上午 6–12 / 下午 12–18 / 晚上 18–24（分钟数） */
 const BANDS=[[360,720],[720,1080],[1080,1440]];
+const BAND_CLS=["band-am","band-pm","band-eve"];
+const MONTH_NAMES=["January","February","March","April","May","June","July","August","September","October","November","December"];
 function bandPos(min){
   const b=min<720?0:min<1080?1:2;
   const s=BANDS[b][0], e=BANDS[b][1];
   return [b, (Math.min(1,Math.max(0,(min-s)/(e-s)))*100).toFixed(2)];
 }
+function dISO(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function addMonths(d,n){ return new Date(d.getFullYear(), d.getMonth()+n, 1, 12); }
+let calFirst=null, calLast=null;
+
+function tripCell(d, day, i){
+  const bands=[[],[],[]];
+  [...day.acts].sort((a,b)=>toMin(a.t)-toMin(b.t)).forEach(a=>{
+    const bp=bandPos(toMin(a.t)), b=bp[0], p=bp[1];
+    const m=a.key?28:13; /* 半高留白：emoji 不跑出时段 */
+    const inner=a.key
+      ? `<span class="key-node"><span style="font-size:24px;line-height:1;">${a.e}</span>${a.tag?`<span class="tag">${a.tag}</span>`:""}</span>`
+      : `<span style="font-size:25px;line-height:1;">${a.e}</span>`;
+    bands[b].push(`<div class="act-dot" style="top:clamp(${m}px, ${p}%, calc(100% - ${m}px));" title="${esc(a.title)} ${a.t}">${inner}</div>`);
+  });
+  const body=bands.map((dots,bi)=>`<div class="band ${BAND_CLS[bi]}">${dots.join("")}</div>`).join("");
+  return `<div class="day-card ${selectedDayIndex===i?"sel":""}" onclick="selectDay(${i})"><div class="date-head">${d.getDate()}</div><div class="day-body">${body}</div></div>`;
+}
+function grayCell(d){
+  return `<div class="day-cell off"><span>${d.getDate()}</span></div>`;
+}
+function renderMonth(first){
+  const y=first.getFullYear(), m=first.getMonth();
+  const t=getTrip(); if(!t) return "";
+  const dmap={};
+  t.days.forEach((d,i)=>{ dmap[d.date]=i; });
+  const offset=new Date(y,m,1,12).getDay();
+  const dim=new Date(y,m+1,0,12).getDate();
+  const dprev=new Date(y,m,0,12).getDate();
+  let h="";
+  for(let i=0;i<offset;i++) h+=grayCell(new Date(y,m-1,dprev-offset+1+i,12));
+  for(let d=1;d<=dim;d++){
+    const dt=new Date(y,m,d,12), iso=dISO(dt);
+    h+=(iso in dmap)?tripCell(dt,t.days[dmap[iso]],dmap[iso]):grayCell(dt);
+  }
+  const trail=(7-(offset+dim)%7)%7;
+  for(let d=1;d<=trail;d++) h+=grayCell(new Date(y,m+1,d,12));
+  return `<div class="month-sec" data-y="${y}" data-m="${m}"><div class="month-grid">${h}</div></div>`;
+}
+function updateMonthLabel(){
+  const sc=document.getElementById("calendar-scroll");
+  const secs=sc.querySelectorAll(".month-sec");
+  for(const sec of secs){
+    if(sec.offsetTop+sec.offsetHeight>sc.scrollTop+2){
+      document.getElementById("cal-month").textContent=MONTH_NAMES[+sec.dataset.m]+" "+sec.dataset.y;
+      return;
+    }
+  }
+}
 function renderCalendar(){
   const t=getTrip(); if(!t) return;
-  document.getElementById("calendar-grid").innerHTML=t.days.map((day,i)=>{
-    const d=new Date(day.date+"T12:00:00");
-    const bands=[[],[],[]];
-    [...day.acts].sort((a,b)=>toMin(a.t)-toMin(b.t)).forEach(a=>{
-      const bp=bandPos(toMin(a.t)), b=bp[0], p=bp[1];
-      const m=a.key?32:15; /* 半高留白：emoji 中心离时段上下边至少这么远，保证不跑出格子 */
-      const inner=a.key
-        ? `<span class="key-node"><span style="font-size:24px;line-height:1;">${a.e}</span>${a.tag?`<span class="tag">${a.tag}</span>`:""}</span>`
-        : `<span style="font-size:25px;line-height:1;">${a.e}</span>`;
-      bands[b].push(`<div class="act-dot" style="top:clamp(${m}px, ${p}%, calc(100% - ${m}px));" title="${esc(a.title)} ${a.t}">${inner}</div>`);
+  const sc=document.getElementById("calendar-scroll");
+  const sm=new Date(t.startDate+"T12:00:00"), em=new Date(t.endDate+"T12:00:00");
+  calFirst=addMonths(sm,-2); calLast=addMonths(em,2);
+  let h="";
+  for(let d=new Date(calFirst);d<=calLast;d=addMonths(d,1)) h+=renderMonth(d);
+  sc.innerHTML=h;
+  const sec=sc.querySelector(`.month-sec[data-y="${sm.getFullYear()}"][data-m="${sm.getMonth()}"]`);
+  sc.scrollTop=sec?sec.offsetTop:0;
+  updateMonthLabel();
+}
+function bindCalScroll(){
+  const sc=document.getElementById("calendar-scroll");
+  let tick=false;
+  sc.addEventListener("scroll",()=>{
+    if(tick) return; tick=true;
+    requestAnimationFrame(()=>{
+      tick=false;
+      if(!getTrip()||!calFirst) return;
+      if(sc.scrollTop<500){
+        const before=sc.scrollHeight;
+        calFirst=addMonths(calFirst,-1);
+        sc.insertAdjacentHTML("afterbegin",renderMonth(calFirst));
+        sc.scrollTop+=sc.scrollHeight-before;
+      }
+      if(sc.scrollTop+sc.clientHeight>sc.scrollHeight-500){
+        calLast=addMonths(calLast,1);
+        sc.insertAdjacentHTML("beforeend",renderMonth(calLast));
+      }
+      updateMonthLabel();
     });
-    const body=bands.map((dots,bi)=>`<div class="band ${["band-am","band-pm","band-eve"][bi]}">${dots.join("")}</div>`).join("");
-    return `<div class="day-card ${selectedDayIndex===i?"sel":""}" onclick="selectDay(${i})">
-      <div class="date-head">${d.getDate()}</div><div class="day-body">${body}</div></div>`;
-  }).join("");
+  });
 }
 function selectDay(i){ selectedDayIndex=i; detailDayIndex=i; renderCalendar(); openDetailView(); }
 
@@ -499,6 +567,7 @@ function refreshChrome(){
   const q=new URLSearchParams(location.search).get("shot");
   if(q==="empty") trips=[];
   refreshChrome();
+  bindCalScroll();
   if(!trips.length) return;
   renderHeader(); renderSidebar(); renderCalendar();
   if(q==="detail"||q==="modal"){ selectDay(1); if(q==="modal") setTimeout(()=>openNewEvent("15:00"),350); }
