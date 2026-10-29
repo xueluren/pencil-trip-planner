@@ -37,7 +37,9 @@
   .day-card.sel { box-shadow: 0 0 0 2px #111; }
   .day-card:active { transform: scale(.97); }
   .date-head { text-align: center; font-weight: 800; font-size: 19px; line-height: 1; padding: 8px 0 6px; border-bottom: 2px solid #111; background: #f1f0eb; flex: 0 0 auto; }
-  .day-body { position: relative; flex: 1; min-height: 110px; }
+  .day-body { position: relative; flex: 1; min-height: 110px; display: flex; flex-direction: column; }
+  .band { flex: 1 1 0; position: relative; min-height: 0; }
+  .band + .band { border-top: 1px solid #e7e4dc; }
   .act-dot { position: absolute; left: 50%; transform: translate(-50%, -50%); line-height: 1; }
   .key-node { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; padding: 7px 9px; min-width: 54px; min-height: 54px; background: #fff; border: 2.5px solid #111; border-radius: 48% 52% 55% 45% / 58% 46% 54% 42%; }
   .key-node .tag { font-size: 12px; font-weight: 800; margin-top: 1px; }
@@ -305,20 +307,29 @@ function renderHeader(){
   document.getElementById("trip-title").textContent=t.title;
   document.getElementById("trip-subtitle").textContent=fmtMD(t.startDate)+" - "+fmtMDY(t.endDate)+" • "+t.days.length+" Days";
 }
+/* 总览时段：上午 6–12 / 下午 12–18 / 晚上 18–24（分钟数） */
+const BANDS=[[360,720],[720,1080],[1080,1440]];
+function bandPos(min){
+  const b=min<720?0:min<1080?1:2;
+  const s=BANDS[b][0], e=BANDS[b][1];
+  return [b, (Math.min(1,Math.max(0,(min-s)/(e-s)))*100).toFixed(2)];
+}
 function renderCalendar(){
   const t=getTrip(); if(!t) return;
   document.getElementById("calendar-grid").innerHTML=t.days.map((day,i)=>{
     const d=new Date(day.date+"T12:00:00");
-    const dots=[...day.acts].sort((a,b)=>toMin(a.t)-toMin(b.t)).map(a=>{
-      const top=(toMin(a.t)/1440*100).toFixed(2);
-      const m=a.key?32:15; /* 半高留白：emoji 中心离上下边至少这么远，保证整个不跑出卡片 */
+    const bands=[[],[],[]];
+    [...day.acts].sort((a,b)=>toMin(a.t)-toMin(b.t)).forEach(a=>{
+      const bp=bandPos(toMin(a.t)), b=bp[0], p=bp[1];
+      const m=a.key?32:15; /* 半高留白：emoji 中心离时段上下边至少这么远，保证不跑出格子 */
       const inner=a.key
         ? `<span class="key-node"><span style="font-size:24px;line-height:1;">${a.e}</span>${a.tag?`<span class="tag">${a.tag}</span>`:""}</span>`
         : `<span style="font-size:25px;line-height:1;">${a.e}</span>`;
-      return `<div class="act-dot" style="top:clamp(${m}px, ${top}%, calc(100% - ${m}px));" title="${esc(a.title)} ${a.t}">${inner}</div>`;
-    }).join("");
+      bands[b].push(`<div class="act-dot" style="top:clamp(${m}px, ${p}%, calc(100% - ${m}px));" title="${esc(a.title)} ${a.t}">${inner}</div>`);
+    });
+    const body=bands.map(dots=>`<div class="band">${dots.join("")}</div>`).join("");
     return `<div class="day-card ${selectedDayIndex===i?"sel":""}" onclick="selectDay(${i})">
-      <div class="date-head">${d.getDate()}</div><div class="day-body">${dots}</div></div>`;
+      <div class="date-head">${d.getDate()}</div><div class="day-body">${body}</div></div>`;
   }).join("");
 }
 function selectDay(i){ selectedDayIndex=i; detailDayIndex=i; renderCalendar(); openDetailView(); }
