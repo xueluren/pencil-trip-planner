@@ -59,8 +59,6 @@
   .strip-day .dn { font-size: 20px; font-weight: 800; margin-top: 2px; }
   .strip-day.sel { background: #111; color: #fff; }
   .strip-day.sel .wd { color: #bbb; }
-  .handle-bar { background: #fff; border-bottom: 2.5px solid #111; padding: 10px 0; display: flex; justify-content: center; cursor: pointer; flex: 0 0 auto; }
-  .handle { width: 64px; height: 7px; background: #111; border-radius: 999px; }
   #timeline-wrap { flex: 1; overflow-y: auto; position: relative; }
   #timeline { position: relative; }
   .hour-row { position: relative; border-bottom: 1px solid #e8e5de; }
@@ -155,7 +153,6 @@
     <!-- DETAIL -->
     <div id="detail-view" class="hidden">
       <div class="strip-wrap"><div id="day-strip"></div></div>
-      <div class="handle-bar" onclick="closeDetailView()"><div class="handle"></div></div>
       <div id="timeline-wrap">
         <div id="timeline">
           <div id="hours"></div>
