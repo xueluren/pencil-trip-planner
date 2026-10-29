@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pencil Trip Planner - Tahiti</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #fcfcfc;
+            color: #111;
+            user-select: none;
+        }
+        .sketch-border {
+            border: 2px solid #111;
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+        }
+        .sketch-box {
+            border: 2px solid #111;
+            border-radius: 4px;
+        }
+        .sketch-circle {
+            border: 2px solid #111;
+            border-radius: 50% 50% 50% 50% / 60% 40% 60% 40%;
+        }
+        .sketch-btn {
+            border: 2px solid #111;
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            box-shadow: 2px 2px 0px #111;
+            transition: all 0.1s ease;
+        }
+        .sketch-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px #111;
+        }
+        /* Hide scrollbar for clean aesthetic */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-[#faf9f5]">
+
+    <!-- TOP HEADER -->
+    <header class="flex items-center justify-between px-4 py-3 border-b-2 border-black bg-white z-20 shrink-0">
+        <button onclick="toggleSidebar()" class="p-1 hover:bg-gray-100 rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
+        <div class="text-center">
+            <div id="trip-title" class="font-bold text-lg tracking-wide">Tahiti Dive & Chill</div>
+            <div id="trip-subtitle" class="text-xs text-gray-500 font-medium">Jan 10 - Jan 23, 2027 • 14 Days</div>
+        </div>
+        <button onclick="openEditTripModal()" class="p-1 hover:bg-gray-100 rounded-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+        </button>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="flex-1 flex flex-col overflow-hidden relative">
+
+        <!-- COLLAPSIBLE OVERVIEW STRIP (Top sticky when day selected) -->
+        <div id="overview-strip" class="bg-white border-b-2 border-black shrink-0 transition-all duration-300 overflow-hidden">
+            <!-- Calendar Grid Header (Mon-Sun) -->
+            <div class="grid grid-cols-7 text-center py-2 border-b border-black text-xs font-bold bg-gray-50">
+                <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+            </div>
+            <!-- Calendar Cells Container -->
+            <div id="calendar-grid" class="grid grid-cols-7 bg-white">
+                <!-- Dynamically injected grid cells -->
+            </div>
+        </div>
+
+        <!-- DETAIL VIEW CONTAINER (Google Calendar Style 00:00 - 23:00) -->
+        <div id="detail-view" class="flex-1 flex flex-col bg-[#faf9f5] overflow-hidden hidden">
+            <!-- Pull-down handle to return to overview -->
+            <div onclick="closeDetailView()" class="w-full py-2 bg-white border-b-2 border-black flex items-center justify-center cursor-pointer shrink-0 hover:bg-gray-50">
+                <div class="w-12 h-1.5 bg-black rounded-full sketch-circle"></div>
+            </div>
+
+            <!-- Scrollable 24-Hour Timeline -->
+            <div id="hourly-timeline" class="flex-1 overflow-y-auto relative p-2">
+                <!-- Dynamically injected hour slots -->
+            </div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR (TRIP SWITCHER) -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 z-40 hidden transition-opacity"></div>
+    <div id="sidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-white border-r-2 border-black z-50 transform -translate-x-full transition-transform duration-300 flex flex-col p-4">
+        <div class="flex items-center justify-between mb-6 pb-2 border-b-2 border-black">
+            <h2 class="font-bold text-lg">My Trips</h2>
+            <button onclick="toggleSidebar()" class="p-1 font-bold">✕</button>
+        </div>
+        <div id="trip-list" class="flex-1 overflow-y-auto space-y-3">
+            <!-- Trip items -->
+        </div>
+    </div>
+
+    <!-- EDIT TRIP MODAL -->
+    <div id="edit-trip-modal" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white sketch-box p-6 w-full max-w-sm shadow-xl space-y-4">
+            <h3 class="font-bold text-lg border-b border-black pb-2">Edit Trip Details</h3>
+            <div>
+                <label class="block text-xs font-bold mb-1">Trip Title</label>
+                <input type="text" id="edit-title-input" class="w-full sketch-box p-2 text-sm focus:outline-none">
+            </div>
+            <div class="flex space-x-2">
+                <div class="flex-1">
+                    <label class="block text-xs font-bold mb-1">Start Date</label>
+                    <input type="date" id="edit-start-input" class="w-full sketch-box p-2 text-sm focus:outline-none">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-xs font-bold mb-1">End Date</label>
+                    <input type="date" id="edit-end-input" class="w-full sketch-box p-2 text-sm focus:outline-none">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeEditTripModal()" class="px-4 py-1.5 text-sm sketch-btn bg-gray-100">Cancel</button>
+                <button onclick="saveTripDetails()" class="px-4 py-1.5 text-sm sketch-btn bg-black text-white">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW EVENT MODAL (Google Calendar Style) -->
+    <div id="event-modal" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white sketch-box p-6 w-full max-w-md shadow-xl space-y-4">
+            <div class="flex justify-between items-center border-b border-black pb-2">
+                <h3 class="font-bold text-lg">Add Activity</h3>
+                <button onclick="closeEventModal()" class="font-bold">✕</button>
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1">Title</label>
+                <input type="text" id="event-title" placeholder="e.g., Blue Corner Dive Site" class="w-full sketch-box p-2 text-sm focus:outline-none">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-xs font-bold mb-1">Start Time</label>
+                    <input type="time" id="event-time" class="w-full sketch-box p-2 text-sm focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">Icon / Category</label>
+                    <div id="emoji-picker-trigger" onclick="toggleEmojiPicker()" class="sketch-box p-2 text-sm flex items-center justify-between cursor-pointer bg-white">
+                        <span id="selected-emoji-display" class="text-lg">✈️</span>
+                        <span class="text-xs text-gray-500">▼</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1">Location</label>
+                <input type="text" id="event-location" placeholder="e.g., Pier 3, Rangiroa" class="w-full sketch-box p-2 text-sm focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold mb-1">Notes</label>
+                <textarea id="event-notes" placeholder="Booking ref, gear rental info..." class="w-full sketch-box p-2 text-sm h-20 focus:outline-none resize-none"></textarea>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeEventModal()" class="px-4 py-1.5 text-sm sketch-btn bg-gray-100">Cancel</button>
+                <button onclick="saveEvent()" class="px-4 py-1.5 text-sm sketch-btn bg-black text-white">Save Event</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EMOJI PICKER POPUP MODAL -->
+    <div id="emoji-picker-modal" class="fixed inset-0 bg-black/30 z-60 hidden flex items-center justify-center p-4">
+        <div class="bg-white sketch-box p-4 w-72 shadow-2xl space-y-3">
+            <div class="flex justify-between items-center border-b border-black pb-2">
+                <span class="font-bold text-sm">Select Icon</span>
+                <button onclick="toggleEmojiPicker()" class="font-bold text-sm">✕</button>
+            </div>
+            <div id="emoji-grid" class="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto p-1">
+                <!-- Dynamically loaded emojis -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock Data for Trips
+        let trips = [
+            {
+                id: 1,
+                title: "Tahiti Dive & Chill",
+                startDate: "2027-01-10",
+                endDate: "2027-01-23",
+                days: generateMockDays("2027-01-10", 14)
+            },
+            {
+                id: 2,
+                title: "Kyoto Autumn Getaway",
+                startDate: "2026-11-12",
+                endDate: "2026-11-16",
+                days: generateMockDays("2026-11-12", 5)
+            }
+        ];
+
+        let currentTripId = 1;
+        let selectedDayIndex = null;
+        let selectedHour = 9;
+
+        const allEmojis = ['✈️', '🚆', '🚗', '🛥️', '🤿', '🏨 In', '🏨 Out', '🍽️', '☕', '🏛️', '🎟️', '🛍️', '📸', '🌊', '🌴', '📌'];
+        let currentSelectedEmoji = '✈️';
+
+        function generateMockDays(startDateStr, count) {
+            let days = [];
+            let start = new Date(startDateStr);
+            for (let i = 0; i < count; i++) {
+                let d = new Date(start);
+                d.setDate(start.getDate() + i);
+                let dateStr = d.toISOString().split('T')[0];
+                let activities = [];
+
+                if (i === 0) {
+                    activities.push({ id: 101, time: "08:00", title: "SFO -> PPT Flight", emoji: "✈️", location: "San Francisco International", notes: "UA123" });
+                    activities.push({ id: 102, time: "16:00", title: "InterContinental Resort", emoji: "🏨 In", location: "Tahiti", notes: "Check-in" });
+                } else if (i === 5) {
+                    activities.push({ id: 103, time: "09:30", title: "Scuba Dive at Tiputa Pass", emoji: "🤿", location: "Rangiroa", notes: "Manta ray cleaning station" });
+                    activities.push({ id: 104, time: "19:00", title: "Sunset Seafood Dinner", emoji: "🍽️", location: "Les Roulottes", notes: "" });
+                } else if (i === count - 1) {
+                    activities.push({ id: 105, time: "11:00", title: "Resort Checkout", emoji: "🏨 Out", location: "Tahiti", notes: "" });
+                    activities.push({ id: 106, time: "22:00", title: "PPT -> SFO Flight", emoji: "✈️", location: "Faa'a International", notes: "UA124" });
+                } else if (i % 3 === 1) {
+                    activities.push({ id: 107, time: "10:00", title: "Lagoon Tour & Snorkeling", emoji: "🌊", location: "Bora Bora", notes: "Bring underwater camera" });
+                }
+
+                days.push({
+                    date: dateStr,
+                    dayNumber: i + 1,
+                    activities: activities
+                });
+            }
+            return days;
+        }
+
+        function getCurrentTrip() {
+            return trips.find(t => t.id === currentTripId);
+        }
+
+        function initApp() {
+            renderSidebar();
+            renderTripHeader();
+            renderCalendar();
+        }
+
+        function renderSidebar() {
+            const listEl = document.getElementById('trip-list');
+            listEl.innerHTML = trips.map(t => `
+                <div onclick="switchTrip(${t.id})" class="p-3 sketch-box cursor-pointer hover:bg-gray-50 ${t.id === currentTripId ? 'bg-black text-white font-bold' : ''}">
+                    <div class="text-sm">${t.title}</div>
+                    <div class="text-xs opacity-75">${t.startDate} ~ ${t.endDate}</div>
+                </div>
+            `).join('');
+        }
+
+        function switchTrip(id) {
+            currentTripId = id;
+            selectedDayIndex = null;
+            toggleSidebar();
+            closeDetailView();
+            renderTripHeader();
+            renderCalendar();
+        }
+
+        function renderTripHeader() {
+            const trip = getCurrentTrip();
+            document.getElementById('trip-title').innerText = trip.title;
+            const startFmt = formatDateDisplay(trip.startDate);
+            const endFmt = formatDateDisplay(trip.endDate);
+            document.getElementById('trip-subtitle').innerText = `${startFmt} - ${endFmt} • ${trip.days.length} Days`;
+        }
+
+        function formatDateDisplay(dateStr) {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function renderCalendar() {
+            const trip = getCurrentTrip();
+            const gridEl = document.getElementById('calendar-grid');
+
+            // Calculate first day offset for grid alignment (Sunday = 0)
+            const firstDate = new Date(trip.days[0].date);
+            const startDayOfWeek = firstDate.getDay();
+
+            let html = '';
+            // Empty offset cells before trip starts
+            for (let i = 0; i < startDayOfWeek; i++) {
+                html += `<div class="border-b border-r border-gray-200 bg-gray-50/50 min-h-[90px]"></div>`;
+            }
+
+            // Render each trip day
+            trip.days.forEach((dayObj, index) => {
+                const d = new Date(dayObj.date);
+                const dayNum = d.getDate();
+                const isSelected = selectedDayIndex === index;
+
+                // Sort activities by time
+                const sortedActs = [...dayObj.activities].sort((a,b) => a.time.localeCompare(b.time));
+
+                html += `
+                    <div onclick="selectDay(${index})" class="border-b border-r border-black p-1 flex flex-col justify-between cursor-pointer transition-colors relative min-h-[90px] ${isSelected ? 'bg-gray-100 ring-2 ring-black z-10' : 'hover:bg-gray-50'}">
+                        <!-- Date Number with Light Gray Background -->
+                        <div class="flex justify-center mb-1">
+                            <span class="text-xs font-bold px-1.5 py-0.5 bg-gray-200/80 rounded border border-gray-300">${dayNum}</span>
+                        </div>
+                        <!-- Proportional or Sequential Activities -->
+                        <div class="flex-1 flex flex-col space-y-1 overflow-hidden">
+                            ${sortedActs.map(act => {
+                                let iconHTML = act.emoji;
+                                if (act.emoji === '✈️' || act.emoji === '🏨 In' || act.emoji === '🏨 Out') {
+                                    iconHTML = `<span class="inline-flex items-center justify-center px-1 text-[11px] font-bold sketch-circle border-black bg-white">${act.emoji}</span>`;
+                                }
+                                return `
+                                    <div class="text-[10px] truncate flex items-center space-x-1 bg-white/80 px-1 py-0.5 sketch-box">
+                                        <span>${iconHTML}</span>
+                                        <span class="text-gray-700 font-medium">${act.time}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            gridEl.innerHTML = html;
+        }
+        function selectDay(index) {
+            selectedDayIndex = index;
+            renderCalendar();
+            openDetailView();
+        }
+
+        function openDetailView() {
+            const detailView = document.getElementById('detail-view');
+            detailView.classList.remove('hidden');
+            renderHourlyTimeline();
+        }
+
+        function closeDetailView() {
+            selectedDayIndex = null;
+            document.getElementById('detail-view').classList.add('hidden');
+            renderCalendar();
+        }
+
+        function renderHourlyTimeline() {
+            const trip = getCurrentTrip();
+            const dayObj = trip.days[selectedDayIndex];
+            const timelineEl = document.getElementById('hourly-timeline');
+
+            let html = '';
+            // Generate hours from 00:00 to 23:00
+            for (let hour = 0; hour < 24; hour++) {
+                const hourStr = String(hour).padStart(2, '0') + ':00';
+                const matchingActs = dayObj.activities.filter(a => a.time.startsWith(String(hour).padStart(2, '0')));
+
+                html += `
+                    <div class="flex border-b border-gray-200 min-h-[50px] group relative">
+                        <div class="w-14 text-right pr-2 pt-1 text-xs text-gray-400 font-mono shrink-0">${hourStr}</div>
+                        <div onclick="openEventModalForHour(${hour})" class="flex-1 border-l border-gray-300 pl-2 pt-1 cursor-pointer hover:bg-gray-100/50 relative">
+                            ${matchingActs.map(act => `
+                                <div class="bg-white sketch-box p-2 mb-1 shadow-sm flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-lg">${act.emoji}</span>
+                                        <div>
+                                            <div class="text-xs font-bold">${act.title}</div>
+                                            <div class="text-[10px] text-gray-500">${act.time} ${act.location ? '• ' + act.location : ''}</div>
+                                        </div>
+                                    </div>
+                                    <button onclick="event.stopPropagation(); deleteActivity(${act.id})" class="text-gray-400 hover:text-black text-xs px-1">✕</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            timelineEl.innerHTML = html;
+        }
+
+        function openEventModalForHour(hour) {
+            selectedHour = hour;
+            document.getElementById('event-title').value = '';
+            document.getElementById('event-time').value = String(hour).padStart(2, '0') + ':00';
+            document.getElementById('event-location').value = '';
+            document.getElementById('event-notes').value = '';
+            currentSelectedEmoji = '✈️';
+            document.getElementById('selected-emoji-display').innerText = currentSelectedEmoji;
+            document.getElementById('event-modal').classList.remove('hidden');
+        }
+
+        function closeEventModal() {
+            document.getElementById('event-modal').classList.add('hidden');
+        }
+
+        function toggleEmojiPicker() {
+            const picker = document.getElementById('emoji-picker-modal');
+            picker.classList.toggle('hidden');
+            if (!picker.classList.contains('hidden')) {
+                renderEmojiGrid();
+            }
+        }
+
+        function renderEmojiGrid() {
+            const grid = document.getElementById('emoji-grid');
+            grid.innerHTML = allEmojis.map(e => `
+                <div onclick="selectEmoji('${e}')" class="text-center p-2 text-xl cursor-pointer hover:bg-gray-100 sketch-box">${e}</div>
+            `).join('');
+        }
+
+        function selectEmoji(emoji) {
+            currentSelectedEmoji = emoji;
+            document.getElementById('selected-emoji-display').innerText = emoji;
+            toggleEmojiPicker();
+        }
+
+        function saveEvent() {
+            const title = document.getElementById('event-title').value;
+            const time = document.getElementById('event-time').value;
+            const location = document.getElementById('event-location').value;
+            const notes = document.getElementById('event-notes').value;
+
+            if (!title) {
+                alert('Please enter a title');
+                return;
+            }
+
+            const trip = getCurrentTrip();
+            const newAct = {
+                id: Date.now(),
+                title,
+                time: time || '09:00',
+                emoji: currentSelectedEmoji,
+                location,
+                notes
+            };
+
+            trip.days[selectedDayIndex].activities.push(newAct);
+            closeEventModal();
+            renderCalendar();
+            renderHourlyTimeline();
+        }
+
+        function deleteActivity(actId) {
+            const trip = getCurrentTrip();
+            const dayObj = trip.days[selectedDayIndex];
+            dayObj.activities = dayObj.activities.filter(a => a.id !== actId);
+            renderCalendar();
+            renderHourlyTimeline();
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        function openEditTripModal() {
+            const trip = getCurrentTrip();
+            document.getElementById('edit-title-input').value = trip.title;
+            document.getElementById('edit-start-input').value = trip.startDate;
+            document.getElementById('edit-end-input').value = trip.endDate;
+            document.getElementById('edit-trip-modal').classList.remove('hidden');
+        }
+
+        function closeEditTripModal() {
+            document.getElementById('edit-trip-modal').classList.add('hidden');
+        }
+
+        function saveTripDetails() {
+            const title = document.getElementById('edit-title-input').value;
+            const start = document.getElementById('edit-start-input').value;
+            const end = document.getElementById('edit-end-input').value;
+
+            if (!title || !start || !end) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const trip = getCurrentTrip();
+            trip.title = title;
+            trip.startDate = start;
+            trip.endDate = end;
+
+            // Recompute days length
+            const diffTime = Math.abs(new Date(end) - new Date(start));
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            trip.days = generateMockDays(start, diffDays);
+
+            closeEditTripModal();
+            renderSidebar();
+            renderTripHeader();
+            renderCalendar();
+            if (selectedDayIndex !== null) closeDetailView();
+        }
+
+        // Initialize on load
+        window.onload = initApp;
+    </script>
+</body>
+</html>
