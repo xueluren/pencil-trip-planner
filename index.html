@@ -39,7 +39,9 @@
   .date-head { text-align: center; font-weight: 800; font-size: 19px; line-height: 1; padding: 8px 0 6px; border-bottom: 2px solid #111; background: #f1f0eb; flex: 0 0 auto; }
   .day-body { position: relative; flex: 1; min-height: 110px; display: flex; flex-direction: column; }
   .band { flex: 1 1 0; position: relative; min-height: 0; }
-  .band + .band { border-top: 1px solid #e7e4dc; }
+  .band-am { background: #fcfbf8; }  /* 上午：近白 */
+  .band-pm { background: #f2f0e9; }  /* 下午：浅暖灰 */
+  .band-eve { background: #e8e5da; } /* 晚上：深一点的灰 */
   .act-dot { position: absolute; left: 50%; transform: translate(-50%, -50%); line-height: 1; }
   .key-node { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; padding: 7px 9px; min-width: 54px; min-height: 54px; background: #fff; border: 2.5px solid #111; border-radius: 48% 52% 55% 45% / 58% 46% 54% 42%; }
   .key-node .tag { font-size: 12px; font-weight: 800; margin-top: 1px; }
@@ -327,7 +329,7 @@ function renderCalendar(){
         : `<span style="font-size:25px;line-height:1;">${a.e}</span>`;
       bands[b].push(`<div class="act-dot" style="top:clamp(${m}px, ${p}%, calc(100% - ${m}px));" title="${esc(a.title)} ${a.t}">${inner}</div>`);
     });
-    const body=bands.map(dots=>`<div class="band">${dots.join("")}</div>`).join("");
+    const body=bands.map((dots,bi)=>`<div class="band ${["band-am","band-pm","band-eve"][bi]}">${dots.join("")}</div>`).join("");
     return `<div class="day-card ${selectedDayIndex===i?"sel":""}" onclick="selectDay(${i})">
       <div class="date-head">${d.getDate()}</div><div class="day-body">${body}</div></div>`;
   }).join("");
