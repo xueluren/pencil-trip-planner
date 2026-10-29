@@ -16,7 +16,11 @@ struct ContentView: View {
                     if store.showingDetail {
                         DetailView(trip: trip)
                     } else {
+                        // Identity per trip: switching trips resets the month
+                        // label + scroll position (HTML renderCalendar does
+                        // scrollTop = 0 on every re-render).
                         OverviewView(trip: trip)
+                            .id(trip.persistentModelID)
                     }
                 } else {
                     EmptyStateView()

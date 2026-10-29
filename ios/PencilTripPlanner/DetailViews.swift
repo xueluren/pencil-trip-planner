@@ -1,6 +1,7 @@
 import SwiftUI
 
-// MARK: - Detail: day strip + drag handle + 24h timeline
+// MARK: - Detail: day strip + 24h timeline (v20: no drag handle;
+// tap the title to return to the overview)
 
 struct DetailView: View {
     @Environment(PlannerStore.self) private var store
@@ -8,7 +9,9 @@ struct DetailView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HeaderView(trip: trip)
+            HeaderView(trip: trip, onTitleTap: {
+                store.closeDetail()
+            })
 
             DayStripView(trip: trip)
                 .background(Color.white)
@@ -16,23 +19,6 @@ struct DetailView: View {
                     Rectangle().frame(height: 2.5).foregroundColor(Theme.ink),
                     alignment: .bottom
                 )
-
-            // Drag handle bar (tap to close, like the HTML handle)
-            Button {
-                store.closeDetail()
-            } label: {
-                RoundedRectangle(cornerRadius: 999)
-                    .fill(Theme.ink)
-                    .frame(width: 64, height: 7)
-                    .padding(.vertical, 10)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.white)
-            }
-            .buttonStyle(.plain)
-            .overlay(
-                Rectangle().frame(height: 2.5).foregroundColor(Theme.ink),
-                alignment: .bottom
-            )
 
             TimelineView(trip: trip)
         }

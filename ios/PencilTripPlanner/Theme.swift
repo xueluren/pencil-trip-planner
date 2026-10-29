@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - Pencil-sketch design tokens (mirrors index.html v13)
+// MARK: - Pencil-sketch design tokens (mirrors index.html v20)
 
 enum Theme {
     static let ink = Color(hex: 0x111111)
@@ -12,7 +12,13 @@ enum Theme {
     static let gray1 = Color(hex: 0x6B6862)   // secondary text
     static let gray2 = Color(hex: 0x8A8781)   // hints
     static let gray3 = Color(hex: 0xA3A09A)   // faint labels
+    static let waveGray = Color(hex: 0xA8A49C) // overview end-line pencil gray (HTML #overview-end)
     static let danger = Color(hex: 0xDD3333)
+    // Overview time bands (HTML v15): AM near-white, PM light warm gray,
+    // evening a touch darker — deeper = later in the day.
+    static let bandAM = Color(hex: 0xFCFBF8)
+    static let bandPM = Color(hex: 0xF2F0E9)
+    static let bandEve = Color(hex: 0xE8E5DA)
 
     /// Type scale (v12 audit): 800 for titles/numbers/buttons, 600 for secondary.
     /// .heavy == 800, .semibold == 600.
