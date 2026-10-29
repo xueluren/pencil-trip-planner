@@ -32,11 +32,11 @@
   #cal-month { font-size: 17px; font-weight: 800; padding: 10px 14px 2px; text-align: left; }
   .wd-row { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; padding: 6px 0; font-size: 11px; font-weight: 800; background: #fff; }
   .wd-row .we { color: #a3a09a; }
-  #calendar-scroll { flex: 1; min-height: 0; overflow-y: auto; background: #fff; position: relative; scrollbar-width: none; }
+  #calendar-scroll { flex: 1; min-height: 0; overflow-y: auto; background: #fff; position: relative; scrollbar-width: none; display: flex; flex-direction: column; }
   #calendar-scroll::-webkit-scrollbar { display: none; }
-  #trip-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 6px; background: #fff; }
-  #overview-end { display: flex; justify-content: center; align-items: center; padding: 10px 0 14px; background: #fff; }
-  .day-card { background: #fff; border: 1px solid #dbd8d2; border-radius: 4px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; height: 200px; min-height: 200px; }
+  #trip-grid { flex: 1 0 auto; display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: minmax(200px, 1fr); gap: 6px; padding: 6px; background: #fff; }
+  #overview-end { display: flex; justify-content: center; align-items: center; padding: 10px 0 14px; background: #fff; flex: 0 0 auto; }
+  .day-card { background: #fff; border: 1px solid #dbd8d2; border-radius: 4px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; min-height: 200px; }
   .day-card.sel { box-shadow: 0 0 0 2px #111; }
   .day-card:active { transform: scale(.97); }
   .date-head { text-align: center; font-weight: 800; font-size: 19px; line-height: 1; padding: 8px 0 6px; border-bottom: 2px solid #111; background: #f1f0eb; flex: 0 0 auto; }
