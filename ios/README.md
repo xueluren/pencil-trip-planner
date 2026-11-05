@@ -6,6 +6,7 @@ A local-first iOS trip planner with a hand-drawn pencil aesthetic.
 - **Overview**: 7-column calendar grid, each day split into morning / afternoon / evening bands, activities placed by time of day, key nodes (✈️ flights, 🏨 check-in/out) circled by hand
 - **Detail**: tap a day → horizontal day strip + 24-hour timeline, tap any hour to add an event
 - **Quick add**: title, emoji picker, start/end time, location, notes
+- **Calendar sync (EventKit)**: one-tap write-through of activities to the system calendar; import system events into the trip grid
 - **Trips sidebar** + first-launch empty state
 
 iOS 17+ · SwiftUI + SwiftData · no dependencies
@@ -53,11 +54,25 @@ ios/PencilTripPlanner/
 The visual spec is `index.html` in the repo root — an interactive, zero-dependency
 HTML prototype of the same design. Open it in any browser to preview.
 
+## Permissions
+
+- **Calendars** (`NSCalendarsUsageDescription`): asked on first sync/import.
+  Everything stays on-device — the app writes to / reads from your local
+  calendars via EventKit, no network involved. If you deny it, the app shows
+  an alert with a shortcut to Settings.
+
+## Upgrading from an older build
+
+Phase 3 adds one optional field to the local database. SwiftData migrates it
+automatically, but if an old install misbehaves after updating, delete the app
+from your iPhone and reinstall (⌘R again) — your trips restart from the
+built-in Tahiti sample.
+
 ## Roadmap
 
 - ✅ Phase 1 — high-fidelity HTML prototype (done, `index.html`)
 - ✅ Phase 2 — native SwiftUI skeleton + SwiftData persistence (this folder)
-- ⬜ Phase 3 — two-way sync with the system calendar (EventKit)
+- ✅ Phase 3 — two-way sync with the system calendar (EventKit)
 - ⬜ Phase 4 — Share Extension: share a booking confirmation → auto-create events
 
 ## Known simplifications vs the HTML prototype

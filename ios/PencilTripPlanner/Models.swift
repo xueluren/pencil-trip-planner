@@ -55,6 +55,9 @@ final class Activity {
     var isKeyNode: Bool
     /// "In" / "Out" tag under the hotel emoji
     var tag: String
+    /// System-calendar link (Phase 3): the EKEvent identifier this app wrote.
+    /// nil = not synced. Lightweight-migration friendly (optional property).
+    var calendarEventIdentifier: String?
     var day: TripDay?
 
     init(title: String,
@@ -64,7 +67,8 @@ final class Activity {
          location: String = "",
          notes: String = "",
          isKeyNode: Bool = false,
-         tag: String = "") {
+         tag: String = "",
+         calendarEventIdentifier: String? = nil) {
         self.title = title
         self.emoji = emoji
         self.startMinutes = startMinutes
@@ -73,6 +77,7 @@ final class Activity {
         self.notes = notes
         self.isKeyNode = isKeyNode
         self.tag = tag
+        self.calendarEventIdentifier = calendarEventIdentifier
     }
 
     var endMinutes: Int { startMinutes + durationMinutes }

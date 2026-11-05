@@ -16,6 +16,9 @@ struct EventEditorView: View {
     @State private var location = ""
     @State private var notes = ""
     @State private var showEmojiPicker = false
+    /// Phase 3: write-through to the system calendar on save.
+    @State private var syncToCalendar = false
+    @State private var previouslySynced = false
 
     private var isEditing: Bool { context.activityID != nil }
 
@@ -111,6 +114,25 @@ struct EventEditorView: View {
                 }
                 .padding(.bottom, 20)
 
+                // Phase 3: system-calendar sync toggle
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 10) {
+                        Text("📅")
+                            .font(.system(size: 22))
+                        Toggle("Sync to system calendar", isOn: $syncToCalendar)
+                            .font(Theme.font(15, .heavy))
+                            .foregroundColor(Theme.ink)
+                            .tint(Theme.ink)
+                    }
+                    if previouslySynced {
+                        Text("Linked — turning this off removes the event from your calendar.")
+                            .font(Theme.font(12, .semibold))
+                            .foregroundColor(Theme.gray1)
+                            .padding(.leading, 32)
+                    }
+                }
+                .padding(.bottom, 20)
+
                 HStack(spacing: 10) {
                     if isEditing {
                         Button {
@@ -163,6 +185,10 @@ struct EventEditorView: View {
             notes = act.notes
             startDate = dateOn(day.date, minutes: act.startMinutes)
             endDate = dateOn(day.date, minutes: act.endMinutes)
+            // Phase 3: reflect the existing calendar link in the toggle.
+            let linked = act.calendarEventIdentifier != nil
+            syncToCalendar = linked
+            previouslySynced = linked
         } else {
             startDate = dateOn(day.date, minutes: context.presetStartMinutes)
             endDate = dateOn(day.date, minutes: context.presetStartMinutes + 60)
@@ -176,7 +202,7 @@ struct EventEditorView: View {
         let em = minutesOfDay(endDate)
         var dur = em - sm
         if dur <= 0 { dur += 24 * 60 }
-        store.saveEvent(EventDraft(
+        var draft = EventDraft(
             dayID: context.dayID,
             editingActivityID: context.activityID,
             title: t,
@@ -185,8 +211,18 @@ struct EventEditorView: View {
             durationMinutes: dur,
             location: location.trimmingCharacters(in: .whitespacesAndNewlines),
             notes: notes.trimmingCharacters(in: .whitespacesAndNewlines)
-        ))
+        )
+        draft.syncToCalendar = syncToCalendar
+        guard let act = store.saveEvent(draft) else { dismiss(); return }
         dismiss()
+        // Phase 3: calendar write-through / unlink after the local save.
+        Task { @MainActor in
+            if syncToCalendar {
+                await store.syncActivityToCalendar(act)
+            } else if previouslySynced {
+                await store.removeActivityFromCalendar(act)
+            }
+        }
     }
 }
 

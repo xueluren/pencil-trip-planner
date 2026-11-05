@@ -27,6 +27,17 @@ struct EventDraft {
     var durationMinutes: Int
     var location: String
     var notes: String
+    /// Phase 3: write through to the system calendar on save.
+    var syncToCalendar: Bool = false
+}
+
+/// One row chosen in the calendar-import sheet.
+struct CalendarImportItem {
+    let title: String
+    let startDate: Date
+    let endDate: Date
+    let location: String
+    let emoji: String
 }
 
 // MARK: - Store (selection state + CRUD, SwiftData on main actor)
@@ -46,6 +57,12 @@ final class PlannerStore {
     // Sheets
     var eventSheet: EventSheetContext?
     var tripSheet: TripSheetContext?
+    var showingCalendarImport = false
+
+    // Phase 3: EventKit sync (all on-device). Non-nil -> ContentView shows
+    // an alert guiding the user to Settings.
+    var calendarNotice: String?
+    let calendarSync = CalendarSyncService()
 
     static let emojis = ["📌","✈️","🏨","🤿","🍹","🚗","🛥️","⛱️","🏖️","🍽️","🥾","🏄","🛍️","⛵","🥂","☕","🏛️","🎟️","📸","🌊","🌴","🚆"]
 
@@ -114,18 +131,24 @@ final class PlannerStore {
         )
     }
 
-    func saveEvent(_ draft: EventDraft) {
-        guard let day = modelContext.model(for: draft.dayID) as? TripDay else { return }
+    /// Saves the draft; returns the saved activity so the caller can
+    /// run calendar sync afterwards. Phase 3: EventKit is write-through
+    /// only when the editor asked for it (draft.syncToCalendar).
+    @discardableResult
+    func saveEvent(_ draft: EventDraft) -> Activity? {
+        guard let day = modelContext.model(for: draft.dayID) as? TripDay else { return nil }
+        let act: Activity
         if let aid = draft.editingActivityID,
-           let act = modelContext.model(for: aid) as? Activity {
-            act.title = draft.title
-            act.emoji = draft.emoji
-            act.startMinutes = draft.startMinutes
-            act.durationMinutes = draft.durationMinutes
-            act.location = draft.location
-            act.notes = draft.notes
+           let existing = modelContext.model(for: aid) as? Activity {
+            existing.title = draft.title
+            existing.emoji = draft.emoji
+            existing.startMinutes = draft.startMinutes
+            existing.durationMinutes = draft.durationMinutes
+            existing.location = draft.location
+            existing.notes = draft.notes
+            act = existing
         } else {
-            let act = Activity(
+            act = Activity(
                 title: draft.title,
                 emoji: draft.emoji,
                 startMinutes: draft.startMinutes,
@@ -136,12 +159,71 @@ final class PlannerStore {
             day.activities.append(act)
         }
         try? modelContext.save()
+        return act
+    }
+
+    /// Writes the activity to the system calendar and stores the event
+    /// identifier back on the activity. Shows a Settings alert on denial.
+    func syncActivityToCalendar(_ activity: Activity) async {
+        guard let day = activity.day else { return }
+        do {
+            let id = try await calendarSync.syncActivity(activity, on: day)
+            activity.calendarEventIdentifier = id
+            try? modelContext.save()
+        } catch let err as CalendarSyncService.SyncError {
+            if case .accessDenied = err {
+                calendarNotice = "Calendar access is off. Turn it on in Settings → Privacy & Security → Calendars to sync."
+            } else {
+                calendarNotice = err.localizedDescription
+            }
+        } catch {
+            calendarNotice = error.localizedDescription
+        }
+    }
+
+    /// Unlinks the activity: deletes the system-calendar copy (best effort)
+    /// and clears the stored identifier.
+    func removeActivityFromCalendar(_ activity: Activity) async {
+        if let id = activity.calendarEventIdentifier {
+            try? calendarSync.removeFromCalendar(identifier: id)
+            activity.calendarEventIdentifier = nil
+            try? modelContext.save()
+        }
+    }
+
+    /// Imports picked system-calendar events as activities on the matching
+    /// trip days. Imported rows are NOT auto-synced (they already live in
+    /// the calendar); the user can link them later via the editor toggle.
+    func importCalendarEvents(_ items: [CalendarImportItem], into trip: Trip) {
+        let cal = Calendar.current
+        let days = trip.sortedDays
+        for item in items {
+            guard let day = days.first(where: { cal.isDate($0.date, inSameDayAs: item.startDate) })
+            else { continue }
+            let startMin = minutesOfDay(item.startDate)
+            let durMin = max(15, Int(item.endDate.timeIntervalSince(item.startDate) / 60))
+            day.activities.append(Activity(
+                title: item.title.isEmpty ? "Imported event" : item.title,
+                emoji: item.emoji,
+                startMinutes: startMin,
+                durationMinutes: durMin,
+                location: item.location
+            ))
+        }
+        try? modelContext.save()
     }
 
     func deleteEvent(id: PersistentIdentifier) {
         if let act = modelContext.model(for: id) as? Activity {
+            // Best effort: also remove the system-calendar copy we wrote.
+            let calID = act.calendarEventIdentifier
             modelContext.delete(act)
             try? modelContext.save()
+            if let calID {
+                Task { @MainActor in
+                    try? calendarSync.removeFromCalendar(identifier: calID)
+                }
+            }
         }
     }
 

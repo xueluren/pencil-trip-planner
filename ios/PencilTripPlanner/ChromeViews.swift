@@ -1,10 +1,12 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 // MARK: - Root: sidebar overlay + overview/detail/empty + sheets
 
 struct ContentView: View {
     @Environment(PlannerStore.self) private var store
+    @Environment(\.openURL) private var openURL
     @Query(sort: \Trip.createdAt, order: .forward) private var trips: [Trip]
 
     var body: some View {
@@ -47,6 +49,25 @@ struct ContentView: View {
         .sheet(item: $store.tripSheet) { ctx in
             TripEditorView(context: ctx)
         }
+        .sheet(isPresented: $store.showingCalendarImport) {
+            if let trip = store.currentTrip(from: trips) {
+                CalendarImportView(trip: trip)
+            }
+        }
+        // Phase 3: permission-denied / sync-error notice with Settings shortcut.
+        .alert("Calendar", isPresented: Binding(
+            get: { store.calendarNotice != nil },
+            set: { if !$0 { store.calendarNotice = nil } }
+        )) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    openURL(url)
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text(store.calendarNotice ?? "")
+        }
     }
 }
 
@@ -78,6 +99,23 @@ struct SidebarView: View {
                 alignment: .bottom
             )
             .padding(.bottom, 18)
+
+            // Phase 3: import system-calendar events into the current trip.
+            if !trips.isEmpty {
+                Button {
+                    store.showingCalendarImport = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "calendar.badge.plus")
+                            .font(.system(size: 16, weight: .heavy))
+                        Text("Import from Calendar")
+                            .font(Theme.font(15, .heavy))
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(SketchButtonStyle())
+                .padding(.bottom, 10)
+            }
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 10) {
