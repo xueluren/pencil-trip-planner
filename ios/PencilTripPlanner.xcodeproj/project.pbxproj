@@ -17,6 +17,10 @@
 		B10000000000000000000008 /* EditorViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000008 /* EditorViews.swift */; };
 		B10000000000000000000009 /* CalendarSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000009 /* CalendarSyncService.swift */; };
 		B1000000000000000000000A /* CalendarImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000A /* CalendarImportView.swift */; };
+		B1000000000000000000000E /* EmailImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000E /* EmailImportView.swift */; };
+		B1000000000000000000000D /* BookingParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000D /* BookingParser.swift */; };
+		B1000000000000000000000C /* GmailAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000C /* GmailAPI.swift */; };
+		B1000000000000000000000B /* GmailAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000B /* GmailAuth.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +34,10 @@
 		F10000000000000000000008 /* EditorViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorViews.swift; sourceTree = "<group>"; };
 		F10000000000000000000009 /* CalendarSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSyncService.swift; sourceTree = "<group>"; };
 		F1000000000000000000000A /* CalendarImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarImportView.swift; sourceTree = "<group>"; };
+		F1000000000000000000000E /* EmailImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailImportView.swift; sourceTree = "<group>"; };
+		F1000000000000000000000D /* BookingParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookingParser.swift; sourceTree = "<group>"; };
+		F1000000000000000000000C /* GmailAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GmailAPI.swift; sourceTree = "<group>"; };
+		F1000000000000000000000B /* GmailAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GmailAuth.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B6A /* PencilTripPlanner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PencilTripPlanner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -65,6 +73,10 @@
 				F10000000000000000000008 /* EditorViews.swift */,
 				F10000000000000000000009 /* CalendarSyncService.swift */,
 				F1000000000000000000000A /* CalendarImportView.swift */,
+				F1000000000000000000000E /* EmailImportView.swift */,
+				F1000000000000000000000D /* BookingParser.swift */,
+				F1000000000000000000000C /* GmailAPI.swift */,
+				F1000000000000000000000B /* GmailAuth.swift */,
 			);
 			path = PencilTripPlanner;
 			sourceTree = "<group>";
@@ -152,6 +164,10 @@
 				B10000000000000000000008 /* EditorViews.swift in Sources */,
 				B10000000000000000000009 /* CalendarSyncService.swift in Sources */,
 				B1000000000000000000000A /* CalendarImportView.swift in Sources */,
+				B1000000000000000000000E /* EmailImportView.swift in Sources */,
+				B1000000000000000000000D /* BookingParser.swift in Sources */,
+				B1000000000000000000000C /* GmailAPI.swift in Sources */,
+				B1000000000000000000000B /* GmailAuth.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -211,6 +227,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "Pencil Trip Planner 需要访问日历，以便把行程同步到系统日历";
+				INFOPLIST_KEY_GmailClientID = "";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -274,6 +291,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "Pencil Trip Planner 需要访问日历，以便把行程同步到系统日历";
+				INFOPLIST_KEY_GmailClientID = "";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = NO;

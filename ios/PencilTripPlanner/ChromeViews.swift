@@ -54,6 +54,9 @@ struct ContentView: View {
                 CalendarImportView(trip: trip)
             }
         }
+        .sheet(isPresented: $store.showingEmailImport) {
+            EmailImportView()
+        }
         // Phase 3: permission-denied / sync-error notice with Settings shortcut.
         .alert("Calendar", isPresented: Binding(
             get: { store.calendarNotice != nil },
@@ -109,6 +112,23 @@ struct SidebarView: View {
                         Image(systemName: "calendar.badge.plus")
                             .font(.system(size: 16, weight: .heavy))
                         Text("Import from Calendar")
+                            .font(Theme.font(15, .heavy))
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(SketchButtonStyle())
+                .padding(.bottom, 10)
+            }
+
+            // Gmail: import booking confirmations from email.
+            if !trips.isEmpty {
+                Button {
+                    store.showingEmailImport = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "envelope.badge")
+                            .font(.system(size: 16, weight: .heavy))
+                        Text("Import from Email")
                             .font(Theme.font(15, .heavy))
                     }
                     .frame(maxWidth: .infinity)

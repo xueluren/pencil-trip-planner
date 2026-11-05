@@ -61,6 +61,33 @@ HTML prototype of the same design. Open it in any browser to preview.
   calendars via EventKit, no network involved. If you deny it, the app shows
   an alert with a shortcut to Settings.
 
+## Gmail import (optional)
+
+Import flight/hotel confirmations straight from your Gmail inbox into trips.
+Zero third-party SDKs — hand-rolled OAuth 2.0 (PKCE) + Gmail REST, tokens in
+the iOS Keychain, `gmail.readonly` scope only.
+
+**One-time setup** (about 5 minutes, needs your Google account):
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com) → create a project
+2. **APIs & Services → Library** → search **Gmail API** → Enable
+3. **OAuth consent screen** → user type **External** → fill app name + your email →
+   add scope `https://www.googleapis.com/auth/gmail.readonly` → add yourself under
+   **Test users** → Done (test mode is fine, no Google review needed for personal use)
+4. **Credentials → Create Credentials → OAuth client ID** → application type **iOS** →
+   Bundle ID = the one shown in Xcode under Signing & Capabilities → Create →
+   copy the **Client ID** (`xxx.apps.googleusercontent.com`)
+5. In Xcode: target → **Info → URL Types** → add one: Identifier can be anything
+   (e.g. `com.google.oauth`), URL Schemes =
+   `com.googleusercontent.apps.` + your client ID **without** the
+   `.apps.googleusercontent.com` suffix
+6. Set your client ID in the app: target → **Build Settings** → find
+   `GmailClientID` (under "User-Defined", added as `INFOPLIST_KEY_GmailClientID`) →
+   paste the full client ID. (Each person building from source uses their own.)
+
+Then in the app: sidebar → **Import from Email** → Sign in with Google → pick a
+confirmation → review the parsed flights/hotels → Create Trip.
+
 ## Upgrading from an older build
 
 Phase 3 adds one optional field to the local database. SwiftData migrates it
@@ -73,6 +100,7 @@ built-in Tahiti sample.
 - ✅ Phase 1 — high-fidelity HTML prototype (done, `index.html`)
 - ✅ Phase 2 — native SwiftUI skeleton + SwiftData persistence (this folder)
 - ✅ Phase 3 — two-way sync with the system calendar (EventKit)
+- ✅ Gmail import — sign in with Google, auto-fetch booking confirmations, parse into trips
 - ⬜ Phase 4 — Share Extension: share a booking confirmation → auto-create events
 
 ## Known simplifications vs the HTML prototype

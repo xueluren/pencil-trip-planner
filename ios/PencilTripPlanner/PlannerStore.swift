@@ -58,6 +58,7 @@ final class PlannerStore {
     var eventSheet: EventSheetContext?
     var tripSheet: TripSheetContext?
     var showingCalendarImport = false
+    var showingEmailImport = false
 
     // Phase 3: EventKit sync (all on-device). Non-nil -> ContentView shows
     // an alert guiding the user to Settings.
