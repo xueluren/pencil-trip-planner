@@ -272,6 +272,55 @@ const TAHITI = [
     { t: "11:00", dur: 60,  e: "🏨", tag: "Out", title: "Resort Checkout", loc: "Tahiti", key: true },
     { t: "22:00", dur: 240, e: "✈️", title: "PPT → SFO", loc: "Faa'a Intl", notes: "UA116", key: true } ] },
 ];
+/* ---------- Data (Europe Christmas 2026 — real trip, added for testing) ---------- */
+const EUROPE = [
+  { d: "2026-12-12", acts: [
+    { t: "19:25", dur: 240, e: "✈️", title: "SFO → PRG", loc: "San Francisco Intl", notes: "LX39 + LX1488 · PNR 268NIZ", key: true } ] },
+  { d: "2026-12-13", acts: [
+    { t: "19:10", dur: 50,  e: "✈️", title: "Arrive Prague", loc: "Václav Havel Airport", notes: "LX1488 lands 19:10", key: true },
+    { t: "20:30", dur: 60,  e: "🏨", tag: "In", title: "SOHO Old Town", loc: "Karoliny Světlé 299/12, Praha 1", notes: "Check-in · Conf HMMWM9E9K3", key: true } ] },
+  { d: "2026-12-14", acts: [
+    { t: "07:30", dur: 60,  e: "📸", title: "Charles Bridge at Sunrise", loc: "Karlův most", notes: "Solo shoot · Hasselblad" },
+    { t: "08:30", dur: 60,  e: "📸", title: "Old Town Square Empty Shots", loc: "Staroměstské náměstí" },
+    { t: "09:30", dur: 30,  e: "🎟️", title: "Philharmonic Restkarten", loc: "Back at the apartment", notes: "Vienna Philharmonic 12/19 15:30 · 3 seats" },
+    { t: "10:30", dur: 240, e: "🎄", title: "Old Town & Christmas Market", loc: "Old Town" },
+    { t: "15:40", dur: 50,  e: "📸", title: "Powder Tower Sunset", loc: "Prašná brána" } ] },
+  { d: "2026-12-15", acts: [
+    { t: "07:30", dur: 90,  e: "📸", title: "Smetanovo nábřeží Shoot", loc: "Smetanovo nábřeží", notes: "Riverbank under the bridge · on the bridge if foggy" },
+    { t: "09:30", dur: 60,  e: "📸", title: "Lesser Town Tram Shoot", loc: "Malostranské náměstí" },
+    { t: "11:00", dur: 240, e: "🏰", title: "Prague Castle & St. Vitus", loc: "Pražský hrad" },
+    { t: "15:30", dur: 45,  e: "📸", title: "Park Cihelná Sunset", loc: "Park Cihelná" } ] },
+  { d: "2026-12-16", acts: [
+    { t: "07:30", dur: 90,  e: "📸", title: "Letná Park Sunrise", loc: "Letenské sady", notes: "Bridge panorama at sunrise" },
+    { t: "10:30", dur: 180, e: "🏛️", title: "Jewish Quarter & Pařížská", loc: "Josefov" },
+    { t: "15:40", dur: 50,  e: "📸", title: "Astronomical Tower at Dusk", loc: "Staroměstská radnice" } ] },
+  { d: "2026-12-17", acts: [
+    { t: "07:30", dur: 90,  e: "📸", title: "Charles Bridge Final Shoot", loc: "Karlův most" },
+    { t: "10:30", dur: 240, e: "☕", title: "Free Day · Pack", loc: "Old Town" },
+    { t: "15:50", dur: 40,  e: "🕯️", title: "Lamp Lighting Ceremony", loc: "Křižovnické náměstí", notes: "Gas lamps lit from 16:05" } ] },
+  { d: "2026-12-18", acts: [
+    { t: "07:30", dur: 60,  e: "📸", title: "Petřín Hill Sunrise", loc: "Petřínské sady", notes: "Back by 09:00" },
+    { t: "10:00", dur: 30,  e: "🏨", tag: "Out", title: "SOHO Old Town Checkout", loc: "Praha 1", key: true },
+    { t: "12:36", dur: 253, e: "🚆", title: "RJ 253 → Wien Hbf", loc: "Praha hl.n.", notes: "Car 368 · Seat 31 · ČD 205096 228 00", key: true },
+    { t: "17:30", dur: 60,  e: "🏨", tag: "In", title: "Andreas Apartment", loc: "Südtiroler Pl. 9/20, 1040 Wien", notes: "Check-in · Conf HMATQ9YW3X", key: true } ] },
+  { d: "2026-12-19", acts: [
+    { t: "10:00", dur: 180, e: "🛍️", title: "Chanel & Miu Miu", loc: "Goldenes Quartier · Tuchlauben", notes: "Chanel Tuchlauben 1 · Miu Miu Tuchlauben 7 · 10:00–18:00" },
+    { t: "15:30", dur: 150, e: "🎟️", title: "Vienna Philharmonic", loc: "Musikverein", notes: "Restkarten · 3 seats" } ] },
+  { d: "2026-12-20", acts: [
+    { t: "11:30", dur: 30,  e: "🏨", tag: "Out", title: "Andreas Apartment Checkout", loc: "Favoriten, Wien", key: true },
+    { t: "12:42", dur: 173, e: "🚆", title: "EC 145 → Budapest-Keleti", loc: "Wien Hbf", notes: "First class · Car 422 · Seat 16 · MÁV 2404247131", key: true },
+    { t: "16:30", dur: 60,  e: "🏨", tag: "In", title: "Parliament Apartment by Mazi", loc: "Alkotmány u. 21, 1054 Budapest", notes: "Check-in · Conf HM2FN8D4SP", key: true } ] },
+  { d: "2026-12-21", acts: [
+    { t: "10:00", dur: 180, e: "🏛️", title: "Parliament & Kossuth Square", loc: "Kossuth Lajos tér" },
+    { t: "14:00", dur: 120, e: "🎄", title: "Christmas Market", loc: "Vörösmarty tér" } ] },
+  { d: "2026-12-22", acts: [
+    { t: "10:00", dur: 300, e: "🛍️", title: "Andrássy Avenue Shopping", loc: "Andrássy út", notes: "LV · Gucci · Prada · Burberry · 10:00–19:00" } ] },
+  { d: "2026-12-23", acts: [
+    { t: "10:00", dur: 240, e: "🏰", title: "Castle Hill · Fisherman's Bastion", loc: "Buda Castle" } ] },
+  { d: "2026-12-24", acts: [
+    { t: "11:00", dur: 60,  e: "🏨", tag: "Out", title: "Parliament Apartment Checkout", loc: "Budapest", key: true },
+    { t: "13:30", dur: 240, e: "✈️", title: "BUD → SFO", loc: "Budapest Airport", notes: "LH1677 + LH458 · arrive SFO 19:35", key: true } ] },
+];
 function genericDays(startStr, count) {
   const out = [];
   const s = new Date(startStr + "T12:00:00");
@@ -290,8 +339,10 @@ let trips = [
     days: TAHITI.map(x => ({ date: x.d, acts: x.acts.map(a => ({ ...a, id: "a" + Math.random().toString(36).slice(2) })) })) },
   { id: 2, title: "Kyoto Autumn Getaway", startDate: "2026-11-12", endDate: "2026-11-16",
     days: genericDays("2026-11-12", 5) },
+  { id: 3, title: "Europe Christmas Trip", startDate: "2026-12-12", endDate: "2026-12-24",
+    days: EUROPE.map(x => ({ date: x.d, acts: x.acts.map(a => ({ ...a, id: "a" + Math.random().toString(36).slice(2) })) })) },
 ];
-let currentTripId = 1, selectedDayIndex = null, detailDayIndex = 0, editingActId = null, tripModalMode = "edit";
+let currentTripId = 3, selectedDayIndex = null, detailDayIndex = 0, editingActId = null, tripModalMode = "edit";
 const EMOJIS = ["📌","✈️","🏨","🤿","🍹","🚗","🛥️","⛱️","🏖️","🍽️","🥾","🏄","🛍️","⛵","🥂","☕","🏛️","🎟️","📸","🌊","🌴","🚆"];
 let currentEmoji = "📌";
 const HOUR_H = 64;

@@ -282,13 +282,21 @@ final class PlannerStore {
 
     func seedIfNeeded() {
         let descriptor = FetchDescriptor<Trip>()
-        guard (try? modelContext.fetchCount(descriptor)) == 0 else { return }
-        let tahiti = seedTahiti()
-        let kyoto = seedKyoto()
-        modelContext.insert(tahiti)
-        modelContext.insert(kyoto)
-        try? modelContext.save()
-        selectedTripID = tahiti.persistentModelID
+        let trips = (try? modelContext.fetch(descriptor)) ?? []
+        if trips.isEmpty {
+            let tahiti = seedTahiti()
+            let kyoto = seedKyoto()
+            modelContext.insert(tahiti)
+            modelContext.insert(kyoto)
+            try? modelContext.save()
+            selectedTripID = tahiti.persistentModelID
+        }
+        // Real Europe itinerary (added 2026-11-12 for testing): insert once
+        // if missing, so existing installs pick it up on next launch too.
+        if !trips.map(\.title).contains("Europe Christmas Trip") {
+            modelContext.insert(seedEurope())
+            try? modelContext.save()
+        }
     }
 
     private struct SeedAct {
@@ -368,6 +376,95 @@ final class PlannerStore {
         ]
         trip.days = rows.map { dayNum, acts in
             let td = TripDay(date: noon(2027, 1, dayNum))
+            td.activities = acts.map { a in
+                Activity(
+                    title: a.title,
+                    emoji: a.emoji,
+                    startMinutes: mins(a.time),
+                    durationMinutes: a.dur,
+                    location: a.loc,
+                    notes: a.notes,
+                    isKeyNode: a.key,
+                    tag: a.tag
+                )
+            }
+            return td
+        }
+        return trip
+    }
+
+    /// Europe Christmas 2026 — the user's real Prague → Vienna → Budapest
+    /// itinerary (flights PNR 268NIZ, trains RJ 253 / EC 145), mirrored 1:1
+    /// from the EUROPE data in index.html. Times are local at each stop.
+    private func seedEurope() -> Trip {
+        let trip = Trip(
+            title: "Europe Christmas Trip",
+            startDate: noon(2026, 12, 12),
+            endDate: noon(2026, 12, 24)
+        )
+        let rows: [(Int, [SeedAct])] = [
+            (12, [
+                SeedAct(time: "19:25", dur: 240, emoji: "✈️", title: "SFO → PRG", loc: "San Francisco Intl", notes: "LX39 + LX1488 · PNR 268NIZ", key: true, tag: ""),
+            ]),
+            (13, [
+                SeedAct(time: "19:10", dur: 50, emoji: "✈️", title: "Arrive Prague", loc: "Václav Havel Airport", notes: "LX1488 lands 19:10", key: true, tag: ""),
+                SeedAct(time: "20:30", dur: 60, emoji: "🏨", title: "SOHO Old Town", loc: "Karoliny Světlé 299/12, Praha 1", notes: "Check-in · Conf HMMWM9E9K3", key: true, tag: "In"),
+            ]),
+            (14, [
+                SeedAct(time: "07:30", dur: 60, emoji: "📸", title: "Charles Bridge at Sunrise", loc: "Karlův most", notes: "Solo shoot · Hasselblad", key: false, tag: ""),
+                SeedAct(time: "08:30", dur: 60, emoji: "📸", title: "Old Town Square Empty Shots", loc: "Staroměstské náměstí", notes: "", key: false, tag: ""),
+                SeedAct(time: "09:30", dur: 30, emoji: "🎟️", title: "Philharmonic Restkarten", loc: "Back at the apartment", notes: "Vienna Philharmonic 12/19 15:30 · 3 seats", key: false, tag: ""),
+                SeedAct(time: "10:30", dur: 240, emoji: "🎄", title: "Old Town & Christmas Market", loc: "Old Town", notes: "", key: false, tag: ""),
+                SeedAct(time: "15:40", dur: 50, emoji: "📸", title: "Powder Tower Sunset", loc: "Prašná brána", notes: "", key: false, tag: ""),
+            ]),
+            (15, [
+                SeedAct(time: "07:30", dur: 90, emoji: "📸", title: "Smetanovo nábřeží Shoot", loc: "Smetanovo nábřeží", notes: "Riverbank under the bridge · on the bridge if foggy", key: false, tag: ""),
+                SeedAct(time: "09:30", dur: 60, emoji: "📸", title: "Lesser Town Tram Shoot", loc: "Malostranské náměstí", notes: "", key: false, tag: ""),
+                SeedAct(time: "11:00", dur: 240, emoji: "🏰", title: "Prague Castle & St. Vitus", loc: "Pražský hrad", notes: "", key: false, tag: ""),
+                SeedAct(time: "15:30", dur: 45, emoji: "📸", title: "Park Cihelná Sunset", loc: "Park Cihelná", notes: "", key: false, tag: ""),
+            ]),
+            (16, [
+                SeedAct(time: "07:30", dur: 90, emoji: "📸", title: "Letná Park Sunrise", loc: "Letenské sady", notes: "Bridge panorama at sunrise", key: false, tag: ""),
+                SeedAct(time: "10:30", dur: 180, emoji: "🏛️", title: "Jewish Quarter & Pařížská", loc: "Josefov", notes: "", key: false, tag: ""),
+                SeedAct(time: "15:40", dur: 50, emoji: "📸", title: "Astronomical Tower at Dusk", loc: "Staroměstská radnice", notes: "", key: false, tag: ""),
+            ]),
+            (17, [
+                SeedAct(time: "07:30", dur: 90, emoji: "📸", title: "Charles Bridge Final Shoot", loc: "Karlův most", notes: "", key: false, tag: ""),
+                SeedAct(time: "10:30", dur: 240, emoji: "☕", title: "Free Day · Pack", loc: "Old Town", notes: "", key: false, tag: ""),
+                SeedAct(time: "15:50", dur: 40, emoji: "🕯️", title: "Lamp Lighting Ceremony", loc: "Křižovnické náměstí", notes: "Gas lamps lit from 16:05", key: false, tag: ""),
+            ]),
+            (18, [
+                SeedAct(time: "07:30", dur: 60, emoji: "📸", title: "Petřín Hill Sunrise", loc: "Petřínské sady", notes: "Back by 09:00", key: false, tag: ""),
+                SeedAct(time: "10:00", dur: 30, emoji: "🏨", title: "SOHO Old Town Checkout", loc: "Praha 1", notes: "", key: true, tag: "Out"),
+                SeedAct(time: "12:36", dur: 253, emoji: "🚆", title: "RJ 253 → Wien Hbf", loc: "Praha hl.n.", notes: "Car 368 · Seat 31 · ČD 205096 228 00", key: true, tag: ""),
+                SeedAct(time: "17:30", dur: 60, emoji: "🏨", title: "Andreas Apartment", loc: "Südtiroler Pl. 9/20, 1040 Wien", notes: "Check-in · Conf HMATQ9YW3X", key: true, tag: "In"),
+            ]),
+            (19, [
+                SeedAct(time: "10:00", dur: 180, emoji: "🛍️", title: "Chanel & Miu Miu", loc: "Goldenes Quartier · Tuchlauben", notes: "Chanel Tuchlauben 1 · Miu Miu Tuchlauben 7 · 10:00–18:00", key: false, tag: ""),
+                SeedAct(time: "15:30", dur: 150, emoji: "🎟️", title: "Vienna Philharmonic", loc: "Musikverein", notes: "Restkarten · 3 seats", key: false, tag: ""),
+            ]),
+            (20, [
+                SeedAct(time: "11:30", dur: 30, emoji: "🏨", title: "Andreas Apartment Checkout", loc: "Favoriten, Wien", notes: "", key: true, tag: "Out"),
+                SeedAct(time: "12:42", dur: 173, emoji: "🚆", title: "EC 145 → Budapest-Keleti", loc: "Wien Hbf", notes: "First class · Car 422 · Seat 16 · MÁV 2404247131", key: true, tag: ""),
+                SeedAct(time: "16:30", dur: 60, emoji: "🏨", title: "Parliament Apartment by Mazi", loc: "Alkotmány u. 21, 1054 Budapest", notes: "Check-in · Conf HM2FN8D4SP", key: true, tag: "In"),
+            ]),
+            (21, [
+                SeedAct(time: "10:00", dur: 180, emoji: "🏛️", title: "Parliament & Kossuth Square", loc: "Kossuth Lajos tér", notes: "", key: false, tag: ""),
+                SeedAct(time: "14:00", dur: 120, emoji: "🎄", title: "Christmas Market", loc: "Vörösmarty tér", notes: "", key: false, tag: ""),
+            ]),
+            (22, [
+                SeedAct(time: "10:00", dur: 300, emoji: "🛍️", title: "Andrássy Avenue Shopping", loc: "Andrássy út", notes: "LV · Gucci · Prada · Burberry · 10:00–19:00", key: false, tag: ""),
+            ]),
+            (23, [
+                SeedAct(time: "10:00", dur: 240, emoji: "🏰", title: "Castle Hill · Fisherman's Bastion", loc: "Buda Castle", notes: "", key: false, tag: ""),
+            ]),
+            (24, [
+                SeedAct(time: "11:00", dur: 60, emoji: "🏨", title: "Parliament Apartment Checkout", loc: "Budapest", notes: "", key: true, tag: "Out"),
+                SeedAct(time: "13:30", dur: 240, emoji: "✈️", title: "BUD → SFO", loc: "Budapest Airport", notes: "LH1677 + LH458 · arrive SFO 19:35", key: true, tag: ""),
+            ]),
+        ]
+        trip.days = rows.map { dayNum, acts in
+            let td = TripDay(date: noon(2026, 12, dayNum))
             td.activities = acts.map { a in
                 Activity(
                     title: a.title,
